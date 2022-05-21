@@ -1,0 +1,50 @@
+@startuml
+component Arduino_Nano_33_BLE_Sense {
+    [温湿度采集] as wsd
+    [大气压采集] as dqy
+    [环境光感采集] as hjgg
+    [手势采集] as ss
+    [分贝采集] as db
+    [LED灯] as led
+    boundary BLE as ble
+}
+
+wsd -> ble
+dqy -> ble
+hjgg -> ble
+ss -> ble
+db -> ble
+ble -> led : Control
+
+cloud Cloud {
+    interface gateway as gateway_1
+    interface Internet
+
+    ble <-> gateway_1 : Bluetooth
+    gateway_1 <..> Internet : HTTP
+    Internet <-> Server : HTTP
+
+    node system {
+        database PostgreSQL {
+            storage sensor_data
+            storage setting
+        }
+        node Server {
+            interface access
+            interface HTTP
+            HTTP <-> access
+            access - PostgreSQL
+        }
+    }
+}
+
+actor actor_A
+actor actor_B
+entity 小程序 as phone1
+entity 小程序 as phone2
+actor_A - phone1
+actor_B - phone2
+phone1 <-> HTTP
+phone2 <-> HTTP
+
+@enduml

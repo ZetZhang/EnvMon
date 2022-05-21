@@ -1,0 +1,30 @@
+@startuml
+skinparam rectangle {
+    roundCorner<<Concept>> 25
+}
+
+cloud INTERNET {
+    database 数据库
+    node 服务器
+    数据库 <-> 服务器
+}
+
+rectangle "室内环境"<<Concept>> {
+    rectangle Arduino_Nano_33_BLE_Sense
+    interface gateway
+    Arduino_Nano_33_BLE_Sense <-> gateway : Bluetooth Low Energy
+    gateway <--> 服务器
+    control LED
+    Arduino_Nano_33_BLE_Sense --> LED
+    actor actorA
+    actorA -> Arduino_Nano_33_BLE_Sense : 手势控制
+    actorA ..> LED : 手势控制
+}
+rectangle "远程办公"<<Concept>> {
+    actor actorB
+    interface "小程序" as phone
+    actorB -> phone : 按钮控制
+    actorB ..> LED : 按钮控制
+    phone <--> 服务器
+}
+@enduml
