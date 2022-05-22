@@ -318,7 +318,23 @@ static void _sendSensorThresholdOnce() {
     }
 }
 
-void demo_services_start_work() {
+// FIXME: central先等待连接导致peripheral没有触发connectHandler
+static void _temporaryPatch() {
+    if (_connectFlag && _isConnected) {
+        // transition
+        _isConnected = true;
+        _connectFlag = false;
+
+        _sensorOnceFlag = false;
+
+        cNotice->smart_reminder_flip = true;
+        // sensor rework
+        // _sensorEnable = true;
+    }
+}
+
+void services_start_work() {
+    _temporaryPatch();
     if (_connectFlag || _isConnected) {
         BLEDevice central = BLE.central();
         if (central && central.connected()) {

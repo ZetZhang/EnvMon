@@ -23,7 +23,7 @@ void setup() {
     sensorThread.onRun(sensorInfo);
 
     bleThread.enabled = true;
-    bleThread.onRun(demo_services_start_work);
+    bleThread.onRun(services_start_work);
 
     mainLoopControl.add(&rgbThread);
     mainLoopControl.add(&bleThread);
