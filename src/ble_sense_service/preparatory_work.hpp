@@ -89,12 +89,12 @@ BLEService controlService(CONTROL_SERVICE_UUID);
 BLEService thresholdService(SENSOR_THRESHOLD_SERVICE_UUID);
 
 BLEByteCharacteristic infoCharacteristic(CHARACTERISTIC_UUID, BLERead | BLEWrite);
-BLEFloatCharacteristic tempCharacteristic(TEMPERATURE_CHARACTERISTIC_UUID, BLERead);
-BLEFloatCharacteristic humidCharacteristic(HUMIDITY_CHARACTERISTIC_UUID, BLERead);
-BLEFloatCharacteristic pressCharacteristic(PRESSURE_CHARACTERISTIC_UUID, BLERead);
-BLEByteCharacteristic sampCharacteristic(SAMPLE_CHARACTERISTIC_UUID, BLERead);
-BLEByteCharacteristic lightIntensityCharacteristic(LIGHT_INTENSITY_CHARACTERISTIC_UUID, BLERead);
-BLEByteCharacteristic controlNoticeCharacteristic(CONTROL_NOTICE_CHARACTERISTIC_UUID, BLERead | BLEWrite);
+BLEFloatCharacteristic tempCharacteristic(TEMPERATURE_CHARACTERISTIC_UUID, BLERead | BLENotify);
+BLEFloatCharacteristic humidCharacteristic(HUMIDITY_CHARACTERISTIC_UUID, BLERead | BLENotify);
+BLEFloatCharacteristic pressCharacteristic(PRESSURE_CHARACTERISTIC_UUID, BLERead | BLENotify);
+BLEByteCharacteristic sampCharacteristic(SAMPLE_CHARACTERISTIC_UUID, BLERead | BLENotify);
+BLEByteCharacteristic lightIntensityCharacteristic(LIGHT_INTENSITY_CHARACTERISTIC_UUID, BLERead | BLENotify);
+BLEByteCharacteristic controlNoticeCharacteristic(CONTROL_NOTICE_CHARACTERISTIC_UUID, BLERead | BLENotify | BLEWrite);
 BLECharacteristic sensorThresholdCharacteristic(SENSOR_THRESHOLD_CHARACTERISTIC_UUID, BLERead | BLEWrite, 14, true);
 // BLEByteCharacteristic infoCharacteristic(CHARACTERISTIC_UUID, BLERead | BLEWrite);
 // BLEFloatCharacteristic tempCharacteristic(TEMPERATURE_CHARACTERISTIC_UUID, BLERead);
@@ -105,14 +105,22 @@ BLECharacteristic sensorThresholdCharacteristic(SENSOR_THRESHOLD_CHARACTERISTIC_
 // BLEByteCharacteristic controlNoticeCharacteristic(CONTROL_NOTICE_CHARACTERISTIC_UUID, BLERead | BLEWrite);
 // BLECharacteristic sensorThresholdCharacteristic(SENSOR_THRESHOLD_CHARACTERISTIC_UUID, BLERead | BLEWrite, 14, true);
 
-BLEDescriptor infoDescriptor(DESCRIPTION_NAMED_UUID, "Arduino Nano 33 BLE SENSE");
-BLEDescriptor tempDescriptor(DESCRIPTION_NAMED_UUID, "temperature message");
-BLEDescriptor humidDescriptor(DESCRIPTION_NAMED_UUID, "humidity message");
-BLEDescriptor pressDescriptor(DESCRIPTION_NAMED_UUID, "pressure message");
-BLEDescriptor sampDescriptor(DESCRIPTION_NAMED_UUID, "sample message");
-BLEDescriptor lightIntensityDescriptor(DESCRIPTION_NAMED_UUID, "light intensity");
-BLEDescriptor controlNoticeDescriptor(DESCRIPTION_NAMED_UUID, "control notice");
-BLEDescriptor sensorThresholdDescriptor(DESCRIPTION_NAMED_UUID, "sensor threshold");
+BLEDescriptor infoDescriptor(DESCRIPTOR_UUID, "Arduino Nano 33 BLE SENSE");
+BLEDescriptor tempDescriptor(TEMPERATURE_DESCRIPTOR_UUID, "temperature message");
+BLEDescriptor humidDescriptor(HUMIDITY_DESCRIPTOR_UUID, "humidity message");
+BLEDescriptor pressDescriptor(PRESSURE_DESCRIPTOR_UUID, "pressure message");
+BLEDescriptor sampDescriptor(SAMPLE_DESCRIPTOR_UUID, "sample message");
+BLEDescriptor lightIntensityDescriptor(LIGHT_INTENSITY_DESCRIPTOR_UUID, "light intensity");
+BLEDescriptor controlNoticeDescriptor(CONTROL_DESCRIPTOR_UUID, "control notice");
+BLEDescriptor sensorThresholdDescriptor(SENSOR_THRESHOLD_DESCRIPTOR_UUID, "sensor threshold");
+// BLEDescriptor infoDescriptor(DESCRIPTION_NAMED_UUID, "Arduino Nano 33 BLE SENSE");
+// BLEDescriptor tempDescriptor(DESCRIPTION_NAMED_UUID, "temperature message");
+// BLEDescriptor humidDescriptor(DESCRIPTION_NAMED_UUID, "humidity message");
+// BLEDescriptor pressDescriptor(DESCRIPTION_NAMED_UUID, "pressure message");
+// BLEDescriptor sampDescriptor(DESCRIPTION_NAMED_UUID, "sample message");
+// BLEDescriptor lightIntensityDescriptor(DESCRIPTION_NAMED_UUID, "light intensity");
+// BLEDescriptor controlNoticeDescriptor(DESCRIPTION_NAMED_UUID, "control notice");
+// BLEDescriptor sensorThresholdDescriptor(DESCRIPTION_NAMED_UUID, "sensor threshold");
 
 // handle function
 void blePeripheralConnectHandler(BLEDevice central);

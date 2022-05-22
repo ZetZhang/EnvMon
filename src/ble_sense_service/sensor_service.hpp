@@ -269,12 +269,18 @@ void recvThresholdHandler(BLEDevice central, BLECharacteristic characteristic) {
 static void _sendToBLE() {
     byte _controlByte = 0;
 
-    infoCharacteristic.writeValue(0x00);
-    tempCharacteristic.writeValue(mBuffer->temperature);
-    humidCharacteristic.writeValue(mBuffer->humidity);
-    pressCharacteristic.writeValue(mBuffer->pressure);
-    sampCharacteristic.writeValue(mBuffer->sample);
-    lightIntensityCharacteristic.writeValue(mBuffer->light_intensity);
+    // if (infoCharacteristic.subscribed())
+        infoCharacteristic.writeValue(0x00);
+    // if (tempCharacteristic.subscribed())
+        tempCharacteristic.writeValue(mBuffer->temperature);
+    // if (humidCharacteristic.subscribed())
+        humidCharacteristic.writeValue(mBuffer->humidity);
+    // if (pressCharacteristic.subscribed())
+        pressCharacteristic.writeValue(mBuffer->pressure);
+    // if (sampCharacteristic.subscribed())
+        sampCharacteristic.writeValue(mBuffer->sample);
+    // if (lightIntensityCharacteristic.subscribed())
+        lightIntensityCharacteristic.writeValue(mBuffer->light_intensity);
 
     if (mBuffer->changed_control_notice) {
         if (mBuffer->light_flip_load())
@@ -283,7 +289,8 @@ static void _sendToBLE() {
             _controlByte |= 0x02;
         if (mBuffer->smart_reminder_flip_load())
             _controlByte |= 0x04;
-        controlNoticeCharacteristic.writeValue(_controlByte);
+        // if (controlNoticeCharacteristic.subscribed())
+            controlNoticeCharacteristic.writeValue(_controlByte);
         mBuffer->control_notice_reset();
     }
 }
