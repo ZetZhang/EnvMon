@@ -58,8 +58,11 @@ class ReceiveDelegate(DefaultDelegate):
             [lightIntensity] = struct.unpack('b', data)
             print("light intensity data:", lightIntensity, "steps")
         elif cHandle == self.peripheral.getControlNoticeHandle():
-
-            print("control data:", data)
+            [control] = struct.unpack('b', data)
+            lightStr = "on" if control & 1 else "off"
+            lightControlStr = "on" if control & 2 else "off"
+            smartReminderStr = "on" if control & 4 else "off"
+            print("control data: [ light:", lightStr, ", light control:", lightControlStr, ", smart reminder:", smartReminderStr, "]")
         elif cHandle == self.peripheral.getThresholdHandle():
             thresholdList = list(data)
             print("threshold data list:", thresholdList)
@@ -70,6 +73,12 @@ class PeripheralService:
     def __init__(self):
         self.peripheral = Peripheral(self.device_addr)
         self.peripheral.setMTU(300)
+
+        self.controlChangedFromServer = True
+        self.thresholdChangedFromServer = False
+
+        self.cData = bytes([3])
+        self.tInfo = bytes([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
 
         self.tempService = self.peripheral.getServiceByUUID(TEMPERATURE_SERVICE_UUID) 
         self.humidService = self.peripheral.getServiceByUUID(HUMIDITY_SERVICE_UUID)
@@ -115,9 +124,14 @@ class PeripheralService:
         self.peripheral.setDelegate(cb(self))
         self.cb_backup = cb
 
-    def sendControlInfo(self, bMes):
-        response = self.controlNoticeCharacteristic.write(bytes([bMes]), withResponse=True)
-        print("message sending...")
+    def sendControlData(self, data):
+        response = self.controlNoticeCharacteristic.write(bytes([3]), withResponse=True)
+        self.controlChangedFromServer = False
+        print(response)
+
+    def sendThresholdInfo(self, info):
+        response = self.sensorThresholdCharacteristic.write(info, withResponse=True)
+        self.thresholdChangedFromServer = False
         print(response)
 
     def isConnected(self):
@@ -151,6 +165,12 @@ class PeripheralService:
         while self.connect():
             if self.peripheral.waitForNotifications(1.0):
                 continue
+            print("-----------------------------------------------")
+            if self.controlChangedFromServer:
+                self.sendControlData(self.cData)
+            if self.thresholdChangedFromServer:
+                self.sendThresholdInfo(self.tInfo)
+            response = self.controlNoticeCharacteristic.write(bytes([3]), withResponse=True)
 
 def sensor_acquisition_service(name, peripheral):
     print("{} threading running.".format(name))
@@ -161,7 +181,7 @@ def sensor_acquisition_service(name, peripheral):
 def message_sending_service(name, peripheral):
     print("{} threading running.".format(name))
     while peripheral.connect():
-        peripheral.sendControlInfo(3)
+        peripheral.sendControlData(3)
         time.sleep(3)
 
 if __name__ == '__main__':
