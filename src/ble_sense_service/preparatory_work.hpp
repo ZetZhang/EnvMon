@@ -29,15 +29,6 @@
 #define LIGHT_INTENSITY_SERVICE_UUID "b4c20000-8684-4ba3-b784-e0b4a499a042"
 #define CONTROL_SERVICE_UUID "6c880000-6ca3-4775-9b56-c6ac4d0c1f72"
 #define SENSOR_THRESHOLD_SERVICE_UUID "75d40000-e036-4297-bea3-d9ea16d570e4"
-// #define SERVICE_UUID "a78f5215-633c-4989-b3ff-b34a9aea4763"
-
-// #define TEMPERATURE_SERVICE_UUID "fe2cc066-0730-4a71-b132-4917c2bb832d"
-// #define HUMIDITY_SERVICE_UUID "b1499c6e-5b47-44d0-88fd-5397b5511263"
-// #define PRESSURE_SERVICE_UUID "41ec05cb-6818-4108-80e8-82bd95504b7e"
-// #define SAMPLE_SERVICE_UUID "855f6230-9f0f-49b7-88f7-d7f66145f461"
-// #define LIGHT_INTENSITY_SERVICE_UUID "b4c2e5a6-8684-4ba3-b784-e0b4a499a042"
-// #define CONTROL_SERVICE_UUID "6c88bb35-6ca3-4775-9b56-c6ac4d0c1f72"
-// #define SENSOR_THRESHOLD_SERVICE_UUID "75d41125-e036-4297-bea3-d9ea16d570e4"
 
 // Characteristic
 #define CHARACTERISTIC_UUID "a78f0001-633c-4989-b3ff-b34a9aea4763"
@@ -49,15 +40,6 @@
 #define LIGHT_INTENSITY_CHARACTERISTIC_UUID "b4c20001-8684-4ba3-b784-e0b4a499a042"
 #define CONTROL_NOTICE_CHARACTERISTIC_UUID "6c880001-6ca3-4775-9b56-c6ac4d0c1f72"
 #define SENSOR_THRESHOLD_CHARACTERISTIC_UUID "75d40001-e036-4297-bea3-d9ea16d570e4"
-// #define CHARACTERISTIC_UUID "97e2a9d5-9dd3-4f64-8d74-d9e97773cbc9"
-
-// #define TEMPERATURE_CHARACTERISTIC_UUID "066f6280-0959-402a-ad50-4afd8f98dcfc"
-// #define HUMIDITY_CHARACTERISTIC_UUID "44970f98-9119-4f7c-aba0-f0b617a97ff3"
-// #define PRESSURE_CHARACTERISTIC_UUID "0e3ca011-0022-450c-ba9a-cb3f6baa6310"
-// #define SAMPLE_CHARACTERISTIC_UUID "b58bf326-a5cf-4467-9f52-2d534e77ac64"
-// #define LIGHT_INTENSITY_CHARACTERISTIC_UUID "67c015cf-fa5b-49a6-986b-80cfc4db4180"
-// #define CONTROL_NOTICE_CHARACTERISTIC_UUID "58b878fc-cd65-451c-a7fc-ba4973909980"
-// #define SENSOR_THRESHOLD_CHARACTERISTIC_UUID "0db11413-4f4d-4115-8992-55a2673275b9"
 
 // Descriptor
 #define DESCRIPTOR_UUID "a78f0002-633c-4989-b3ff-b34a9aea4763"
@@ -69,15 +51,6 @@
 #define LIGHT_INTENSITY_DESCRIPTOR_UUID "b4c20002-8684-4ba3-b784-e0b4a499a042"
 #define CONTROL_DESCRIPTOR_UUID "6c880002-6ca3-4775-9b56-c6ac4d0c1f72"
 #define SENSOR_THRESHOLD_DESCRIPTOR_UUID "75d40002-e036-4297-bea3-d9ea16d570e4"
-// #define DESCRIPTOR_UUID "fa3d5daf-4885-4286-a08e-67c2851da80d"
-
-// #define TEMPERATURE_DESCRIPTOR_UUID "9a0aec8b-1da7-40e7-9ea9-aca0211f479c"
-// #define HUMIDITY_DESCRIPTOR_UUID "efceb8b5-c6f5-4833-aba9-a5b97930d9dd"
-// #define PRESSURE_DESCRIPTOR_UUID "cad1994d-0fc0-4058-9699-ae03f2a2ef9c"
-// #define SAMPLE_DESCRIPTOR_UUID "9e8a4667-6b1c-4e4b-a6a0-6a036f3acd71"
-// #define LIGHT_INTENSITY_DESCRIPTOR_UUID "006c4863-5e41-45de-bc20-85a079306052"
-// #define CONTROL_DESCRIPTOR_UUID "4d2eb43c-62f7-45f7-b9f7-4f4603197b98"
-// #define SENSOR_THRESHOLD_DESCRIPTOR_UUID "81bfe5b4-f580-4976-8fd8-0f9792f01260"
 
 BLEService bleService(SERVICE_UUID);
 BLEService tempService(TEMPERATURE_SERVICE_UUID);
@@ -96,31 +69,15 @@ BLEByteCharacteristic sampCharacteristic(SAMPLE_CHARACTERISTIC_UUID, BLERead | B
 BLEByteCharacteristic lightIntensityCharacteristic(LIGHT_INTENSITY_CHARACTERISTIC_UUID, BLERead | BLENotify);
 BLEByteCharacteristic controlNoticeCharacteristic(CONTROL_NOTICE_CHARACTERISTIC_UUID, BLERead | BLENotify | BLEWrite);
 BLECharacteristic sensorThresholdCharacteristic(SENSOR_THRESHOLD_CHARACTERISTIC_UUID, BLERead | BLEWrite, 14, true);
-// BLEByteCharacteristic infoCharacteristic(CHARACTERISTIC_UUID, BLERead | BLEWrite);
-// BLEFloatCharacteristic tempCharacteristic(TEMPERATURE_CHARACTERISTIC_UUID, BLERead);
-// BLEFloatCharacteristic humidCharacteristic(HUMIDITY_CHARACTERISTIC_UUID, BLERead);
-// BLEFloatCharacteristic pressCharacteristic(PRESSURE_CHARACTERISTIC_UUID, BLERead);
-// BLEByteCharacteristic sampCharacteristic(SAMPLE_CHARACTERISTIC_UUID, BLERead);
-// BLEByteCharacteristic lightIntensityCharacteristic(LIGHT_INTENSITY_CHARACTERISTIC_UUID, BLERead);
-// BLEByteCharacteristic controlNoticeCharacteristic(CONTROL_NOTICE_CHARACTERISTIC_UUID, BLERead | BLEWrite);
-// BLECharacteristic sensorThresholdCharacteristic(SENSOR_THRESHOLD_CHARACTERISTIC_UUID, BLERead | BLEWrite, 14, true);
 
-BLEDescriptor infoDescriptor(DESCRIPTOR_UUID, "Arduino Nano 33 BLE SENSE");
-BLEDescriptor tempDescriptor(TEMPERATURE_DESCRIPTOR_UUID, "temperature message");
-BLEDescriptor humidDescriptor(HUMIDITY_DESCRIPTOR_UUID, "humidity message");
-BLEDescriptor pressDescriptor(PRESSURE_DESCRIPTOR_UUID, "pressure message");
-BLEDescriptor sampDescriptor(SAMPLE_DESCRIPTOR_UUID, "sample message");
-BLEDescriptor lightIntensityDescriptor(LIGHT_INTENSITY_DESCRIPTOR_UUID, "light intensity");
-BLEDescriptor controlNoticeDescriptor(CONTROL_DESCRIPTOR_UUID, "control notice");
-BLEDescriptor sensorThresholdDescriptor(SENSOR_THRESHOLD_DESCRIPTOR_UUID, "sensor threshold");
-// BLEDescriptor infoDescriptor(DESCRIPTION_NAMED_UUID, "Arduino Nano 33 BLE SENSE");
-// BLEDescriptor tempDescriptor(DESCRIPTION_NAMED_UUID, "temperature message");
-// BLEDescriptor humidDescriptor(DESCRIPTION_NAMED_UUID, "humidity message");
-// BLEDescriptor pressDescriptor(DESCRIPTION_NAMED_UUID, "pressure message");
-// BLEDescriptor sampDescriptor(DESCRIPTION_NAMED_UUID, "sample message");
-// BLEDescriptor lightIntensityDescriptor(DESCRIPTION_NAMED_UUID, "light intensity");
-// BLEDescriptor controlNoticeDescriptor(DESCRIPTION_NAMED_UUID, "control notice");
-// BLEDescriptor sensorThresholdDescriptor(DESCRIPTION_NAMED_UUID, "sensor threshold");
+BLEDescriptor infoDescriptor(DESCRIPTION_NAMED_UUID, "Arduino Nano 33 BLE SENSE");
+BLEDescriptor tempDescriptor(DESCRIPTION_NAMED_UUID, "temperature message");
+BLEDescriptor humidDescriptor(DESCRIPTION_NAMED_UUID, "humidity message");
+BLEDescriptor pressDescriptor(DESCRIPTION_NAMED_UUID, "pressure message");
+BLEDescriptor sampDescriptor(DESCRIPTION_NAMED_UUID, "sample message");
+BLEDescriptor lightIntensityDescriptor(DESCRIPTION_NAMED_UUID, "light intensity");
+BLEDescriptor controlNoticeDescriptor(DESCRIPTION_NAMED_UUID, "control notice");
+BLEDescriptor sensorThresholdDescriptor(DESCRIPTION_NAMED_UUID, "sensor threshold");
 
 // handle function
 void blePeripheralConnectHandler(BLEDevice central);
