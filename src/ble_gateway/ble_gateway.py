@@ -19,7 +19,6 @@ LIGHT_INTENSITY_CHARACTERISTIC_UUID = "b4c20001-8684-4ba3-b784-e0b4a499a042"
 CONTROL_NOTICE_CHARACTERISTIC_UUID = "6c880001-6ca3-4775-9b56-c6ac4d0c1f72"
 SENSOR_THRESHOLD_CHARACTERISTIC_UUID = "75d40001-e036-4297-bea3-d9ea16d570e4"
 
-
 class ScanDelegate(DefaultDelegate):
     def __init__(self):
         DefaultDelegate.__init__(self)
@@ -73,7 +72,7 @@ class PeripheralService:
         self.peripheral.setMTU(300)
 
         self.controlChangedFromServer = False
-        self.thresholdChangedFromServer = True
+        self.thresholdChangedFromServer = False
 
         self.cData = bytes([0])
         self.tInfo = bytes([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
