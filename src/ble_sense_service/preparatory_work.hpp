@@ -20,8 +20,6 @@
 #define SERVICE_NAMED_UUID "1800"
 
 // service
-#define SERVICE_UUID "a78f0000-633c-4989-b3ff-b34a9aea4763"
-
 #define TEMPERATURE_SERVICE_UUID "fe2c0000-0730-4a71-b132-4917c2bb832d"
 #define HUMIDITY_SERVICE_UUID "b1490000-5b47-44d0-88fd-5397b5511263"
 #define PRESSURE_SERVICE_UUID "41ec0000-6818-4108-80e8-82bd95504b7e"
@@ -31,8 +29,6 @@
 #define SENSOR_THRESHOLD_SERVICE_UUID "75d40000-e036-4297-bea3-d9ea16d570e4"
 
 // Characteristic
-#define CHARACTERISTIC_UUID "a78f0001-633c-4989-b3ff-b34a9aea4763"
-
 #define TEMPERATURE_CHARACTERISTIC_UUID "fe2c0001-0730-4a71-b132-4917c2bb832d"
 #define HUMIDITY_CHARACTERISTIC_UUID "b1490001-5b47-44d0-88fd-5397b5511263"
 #define PRESSURE_CHARACTERISTIC_UUID "41ec0001-6818-4108-80e8-82bd95504b7e"
@@ -42,8 +38,6 @@
 #define SENSOR_THRESHOLD_CHARACTERISTIC_UUID "75d40001-e036-4297-bea3-d9ea16d570e4"
 
 // Descriptor
-#define DESCRIPTOR_UUID "a78f0002-633c-4989-b3ff-b34a9aea4763"
-
 #define TEMPERATURE_DESCRIPTOR_UUID "fe2c0002-0730-4a71-b132-4917c2bb832d"
 #define HUMIDITY_DESCRIPTOR_UUID "b1490002-5b47-44d0-88fd-5397b5511263"
 #define PRESSURE_DESCRIPTOR_UUID "41ec0002-6818-4108-80e8-82bd95504b7e"
@@ -52,7 +46,6 @@
 #define CONTROL_DESCRIPTOR_UUID "6c880002-6ca3-4775-9b56-c6ac4d0c1f72"
 #define SENSOR_THRESHOLD_DESCRIPTOR_UUID "75d40002-e036-4297-bea3-d9ea16d570e4"
 
-BLEService bleService(SERVICE_UUID);
 BLEService tempService(TEMPERATURE_SERVICE_UUID);
 BLEService humidService(HUMIDITY_SERVICE_UUID);
 BLEService pressService(PRESSURE_SERVICE_UUID);
@@ -61,7 +54,6 @@ BLEService lightService(LIGHT_INTENSITY_SERVICE_UUID);
 BLEService controlService(CONTROL_SERVICE_UUID);
 BLEService thresholdService(SENSOR_THRESHOLD_SERVICE_UUID);
 
-BLEByteCharacteristic infoCharacteristic(CHARACTERISTIC_UUID, BLERead | BLEWrite);
 BLEFloatCharacteristic tempCharacteristic(TEMPERATURE_CHARACTERISTIC_UUID, BLERead | BLENotify);
 BLEFloatCharacteristic humidCharacteristic(HUMIDITY_CHARACTERISTIC_UUID, BLERead | BLENotify);
 BLEFloatCharacteristic pressCharacteristic(PRESSURE_CHARACTERISTIC_UUID, BLERead | BLENotify);
@@ -220,7 +212,6 @@ void ble_services_init() {
         BLE.setEventHandler(BLEConnected, blePeripheralConnectHandler);
         BLE.setEventHandler(BLEDisconnected, blePeripheralDisconnectHandler);
 
-        bleService.addCharacteristic(infoCharacteristic);
         tempService.addCharacteristic(tempCharacteristic);
         humidService.addCharacteristic(humidCharacteristic);
         pressService.addCharacteristic(pressCharacteristic);
@@ -229,7 +220,6 @@ void ble_services_init() {
         controlService.addCharacteristic(controlNoticeCharacteristic);
         thresholdService.addCharacteristic(sensorThresholdCharacteristic);
 
-        infoCharacteristic.addDescriptor(infoDescriptor);
         tempCharacteristic.addDescriptor(tempDescriptor);
         humidCharacteristic.addDescriptor(humidDescriptor);
         pressCharacteristic.addDescriptor(pressDescriptor);

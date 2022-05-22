@@ -269,17 +269,15 @@ void recvThresholdHandler(BLEDevice central, BLECharacteristic characteristic) {
 static void _sendToBLE() {
     byte _controlByte = 0;
 
-    // if (infoCharacteristic.subscribed())
-        infoCharacteristic.writeValue(0x00);
-    // if (tempCharacteristic.subscribed())
+    if (tempCharacteristic.subscribed())
         tempCharacteristic.writeValue(mBuffer->temperature);
-    // if (humidCharacteristic.subscribed())
+    if (humidCharacteristic.subscribed())
         humidCharacteristic.writeValue(mBuffer->humidity);
-    // if (pressCharacteristic.subscribed())
+    if (pressCharacteristic.subscribed())
         pressCharacteristic.writeValue(mBuffer->pressure);
-    // if (sampCharacteristic.subscribed())
+    if (sampCharacteristic.subscribed())
         sampCharacteristic.writeValue(mBuffer->sample);
-    // if (lightIntensityCharacteristic.subscribed())
+    if (lightIntensityCharacteristic.subscribed())
         lightIntensityCharacteristic.writeValue(mBuffer->light_intensity);
 
     if (mBuffer->changed_control_notice) {
@@ -289,7 +287,7 @@ static void _sendToBLE() {
             _controlByte |= 0x02;
         if (mBuffer->smart_reminder_flip_load())
             _controlByte |= 0x04;
-        // if (controlNoticeCharacteristic.subscribed())
+        if (controlNoticeCharacteristic.subscribed())
             controlNoticeCharacteristic.writeValue(_controlByte);
         mBuffer->control_notice_reset();
     }
