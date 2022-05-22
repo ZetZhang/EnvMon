@@ -9,8 +9,9 @@ class MyDelegate(btle.DefaultDelegate):
 
 # Initialisation  -------
 ADDRESS = "f6:84:22:8e:62:4a"
-CHARACTERISTIC_UUID = "fe2c0001-0730-4a71-b132-4917c2bb832d"
-SERVICE_UUID = "fe2c0000-0730-4a71-b132-4917c2bb832d"
+
+CHARACTERISTIC_UUID = "6c880001-6ca3-4775-9b56-c6ac4d0c1f72"
+SERVICE_UUID = "6c880000-6ca3-4775-9b56-c6ac4d0c1f72"
 
 p = btle.Peripheral(ADDRESS)
 p.setDelegate(MyDelegate())
@@ -22,7 +23,10 @@ CCCD_UUID = 0x2902
 svc = p.getServiceByUUID(SERVICE_UUID)
 ch = svc.getCharacteristics(CHARACTERISTIC_UUID)[0]
 ch_cccd = ch.getDescriptors(forUUID=CCCD_UUID)[0]
-ch_cccd.write(bytes([1, 0]))
+response1 = ch_cccd.write(bytes([1, 0]))
+print(response1)
+response2 = ch.write(bytes([3]), withResponse=True)
+print(response2)
 
 while True:
     if p.waitForNotifications(1.0):
