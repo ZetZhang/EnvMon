@@ -1,9 +1,7 @@
 from bluepy.btle import Scanner, DefaultDelegate,Peripheral
 import struct
-import time
 import threading
 
-#  ADDR = "f6:84:22:8e:62:4a";
 CCCD_UUID = 0x2902
 TEMPERATURE_SERVICE_UUID = "fe2c0000-0730-4a71-b132-4917c2bb832d"
 HUMIDITY_SERVICE_UUID = "b1490000-5b47-44d0-88fd-5397b5511263"
@@ -74,10 +72,10 @@ class PeripheralService:
         self.peripheral = Peripheral(self.device_addr)
         self.peripheral.setMTU(300)
 
-        self.controlChangedFromServer = True
-        self.thresholdChangedFromServer = False
+        self.controlChangedFromServer = False
+        self.thresholdChangedFromServer = True
 
-        self.cData = bytes([3])
+        self.cData = bytes([0])
         self.tInfo = bytes([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
 
         self.tempService = self.peripheral.getServiceByUUID(TEMPERATURE_SERVICE_UUID) 
@@ -165,12 +163,10 @@ class PeripheralService:
         while self.connect():
             if self.peripheral.waitForNotifications(1.0):
                 continue
-            print("-----------------------------------------------")
             if self.controlChangedFromServer:
                 self.sendControlData(self.cData)
             if self.thresholdChangedFromServer:
                 self.sendThresholdInfo(self.tInfo)
-            response = self.controlNoticeCharacteristic.write(bytes([3]), withResponse=True)
 
 def sensor_acquisition_service(name, peripheral):
     print("{} threading running.".format(name))
@@ -178,19 +174,11 @@ def sensor_acquisition_service(name, peripheral):
     peripheral.notificationEnable()
     peripheral.loop()
 
-def message_sending_service(name, peripheral):
-    print("{} threading running.".format(name))
-    while peripheral.connect():
-        peripheral.sendControlData(3)
-        time.sleep(3)
-
 if __name__ == '__main__':
     pService = PeripheralService()
     try:
-        #  mThread = threading.Thread(target=message_sending_service, args=('mss', pService))
         sThread = threading.Thread(target=sensor_acquisition_service, args=('mas', pService))
 
-        #  mThread.start()
         sThread.start()
 
     except:
