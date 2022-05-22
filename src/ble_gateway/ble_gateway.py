@@ -3,9 +3,7 @@ import struct
 import time
 import threading
 
-global conn
-
-ADDR = "f6:84:22:8e:62:4a";
+#  ADDR = "f6:84:22:8e:62:4a";
 CCCD_UUID = 0x2902
 TEMPERATURE_SERVICE_UUID = "fe2c0000-0730-4a71-b132-4917c2bb832d"
 HUMIDITY_SERVICE_UUID = "b1490000-5b47-44d0-88fd-5397b5511263"
@@ -34,76 +32,52 @@ class ScanDelegate(DefaultDelegate):
         elif isNewData:
             print("Recevied new data from {}".format(dev.addr))
 
-
-def main_loop(conn):
-    print("Connected to BLE_Server")
-    conn.setMTU(500)
-
-    humidService = conn.getServiceByUUID(HUMIDITY_SERVICE_UUID)
-    pressService = conn.getServiceByUUID(PRESSURE_SERVICE_UUID)
-    sampService = conn.getServiceByUUID(SAMPLE_SERVICE_UUID)
-    lightService = conn.getServiceByUUID(LIGHT_INTENSITY_SERVICE_UUID)
-    controlService = conn.getServiceByUUID(CONTROL_SERVICE_UUID)
-    thresholdService = conn.getServiceByUUID(SENSOR_THRESHOLD_SERVICE_UUID)
-
-    humidCharacteristic = humidService.getCharacteristics(HUMIDITY_CHARACTERISTIC_UUID)
-    pressCharacteristic = pressService.getCharacteristics(PRESSURE_CHARACTERISTIC_UUID)
-    sampCharacteristic = sampService.getCharacteristics(SAMPLE_CHARACTERISTIC_UUID)
-    lightIntensityCharacteristic = lightService.getCharacteristics(LIGHT_INTENSITY_CHARACTERISTIC_UUID)
-    controlNoticeCharacteristic = controlService.getCharacteristics(CONTROL_NOTICE_CHARACTERISTIC_UUID)
-    sensorThresholdCharacteristic = thresholdService.getCharacteristics(SENSOR_THRESHOLD_CHARACTERISTIC_UUID)
-
-    while True:
-        for charac in humidCharacteristic:
-            [humidity] = struct.unpack('f', charac.read())
-            print("humidity data:", round(humidity, 2), "%")
-
-        for charac in pressCharacteristic:
-            [pressure] = struct.unpack('f', charac.read())
-            print("pressure data:", round(pressure, 2), "kPa")
-
-        for charac in sampCharacteristic:
-            sample = struct.unpack('b', charac.read())
-            print("sample data:", sample, "dB")
-
-        for charac in lightIntensityCharacteristic:
-            [lightIntensity] = struct.unpack('b', charac.read())
-            print("light intensity data:", lightIntensity, "steps")
-
-        for charac in controlNoticeCharacteristic:
-            #  charac.write(b'\x2a');
-            print("control data:", charac.read())
-
-        for charac in sensorThresholdCharacteristic:
-            thresholdList = list(charac.read())
-            print("threshold data list: ", thresholdList)
-
-        print("------------------------------------------")
-
-        time.sleep(1)
-
 class ReceiveDelegate(DefaultDelegate):
     def __init__(self, peripheral):
         DefaultDelegate.__init__(self)
+        self.peripheral = peripheral
 
     def handleNotification(self, cHandle, data):
-        #  print("Notification from Handle: 0x{}".format(cHandle, "02X"))
-        #  print(hexlify(data))
-        #  cHandle.getHandle().write(bytes(3))
-        print("[<--]", data)
+        #  print("[<--]", data)
+        #  ret = {
+        #          self.peripheral.getTemperatureHandle(): lambda data: print("yes"),
+        #  } [cHandle](data)
+        if cHandle == self.peripheral.getTemperatureHandle():
+            [temperature] = struct.unpack('f', data)
+            print("temperature data:", round(temperature, 2), "°C")
+        elif cHandle == self.peripheral.getHumidityHandle():
+            [humidity] = struct.unpack('f', data)
+            print("humidity data:", round(humidity, 2), "%")
+        elif cHandle == self.peripheral.getPressureHandle():
+            [pressure] = struct.unpack('f', data)
+            print("pressure data:", round(pressure, 2), "kPA")
+        elif cHandle == self.peripheral.getSampleHandle():
+            [sample] = struct.unpack('b', data)
+            print("sample data:", sample, "dB")
+        elif cHandle == self.peripheral.getLightIntensityHandle():
+            [lightIntensity] = struct.unpack('b', data)
+            print("light intensity data:", lightIntensity, "steps")
+        elif cHandle == self.peripheral.getControlNoticeHandle():
+
+            print("control data:", data)
+        elif cHandle == self.peripheral.getThresholdHandle():
+            thresholdList = list(data)
+            print("threshold data list:", thresholdList)
 
 class PeripheralService:
-    def __init__(self, addr):
-        self.conn = Peripheral(addr)
-        self.conn.setMTU(300)
+    device_addr = "f6:84:22:8e:62:4a"
 
-        self.tempService = self.conn.getServiceByUUID(TEMPERATURE_SERVICE_UUID)
-        self.humidService = self.conn.getServiceByUUID(HUMIDITY_SERVICE_UUID)
-        self.pressService = self.conn.getServiceByUUID(PRESSURE_SERVICE_UUID)
-        self.sampService = self.conn.getServiceByUUID(SAMPLE_SERVICE_UUID)
-        self.lightService = self.conn.getServiceByUUID(LIGHT_INTENSITY_SERVICE_UUID)
-        self.controlService = self.conn.getServiceByUUID(CONTROL_SERVICE_UUID)
-        self.thresholdService = self.conn.getServiceByUUID(SENSOR_THRESHOLD_SERVICE_UUID)
+    def __init__(self):
+        self.peripheral = Peripheral(self.device_addr)
+        self.peripheral.setMTU(300)
+
+        self.tempService = self.peripheral.getServiceByUUID(TEMPERATURE_SERVICE_UUID) 
+        self.humidService = self.peripheral.getServiceByUUID(HUMIDITY_SERVICE_UUID)
+        self.pressService = self.peripheral.getServiceByUUID(PRESSURE_SERVICE_UUID)
+        self.sampService = self.peripheral.getServiceByUUID(SAMPLE_SERVICE_UUID)
+        self.lightService = self.peripheral.getServiceByUUID(LIGHT_INTENSITY_SERVICE_UUID)
+        self.controlService = self.peripheral.getServiceByUUID(CONTROL_SERVICE_UUID)
+        self.thresholdService = self.peripheral.getServiceByUUID(SENSOR_THRESHOLD_SERVICE_UUID)
 
         self.tempCharacteristic = self.tempService.getCharacteristics(TEMPERATURE_CHARACTERISTIC_UUID)[0]
         self.humidCharacteristic = self.humidService.getCharacteristics(HUMIDITY_CHARACTERISTIC_UUID)[0]
@@ -113,48 +87,90 @@ class PeripheralService:
         self.controlNoticeCharacteristic = self.controlService.getCharacteristics(CONTROL_NOTICE_CHARACTERISTIC_UUID)[0]
         self.sensorThresholdCharacteristic = self.thresholdService.getCharacteristics(SENSOR_THRESHOLD_CHARACTERISTIC_UUID)[0]
 
+    def getTemperatureHandle(self):
+        return self.tempCharacteristic.getHandle()
+
+    def getHumidityHandle(self):
+        return self.humidCharacteristic.getHandle()
+
+    def getPressureHandle(self):
+        return self.pressCharacteristic.getHandle()
+
+    def getSampleHandle(self):
+        return self.sampCharacteristic.getHandle()
+
+    def getLightIntensityHandle(self):
+        return self.lightIntensityCharacteristic.getHandle()
+
+    def getControlNoticeHandle(self):
+        return self.controlNoticeCharacteristic.getHandle()
+
+    def getThresholdHandle(self):
+        return self.sensorThresholdCharacteristic.getHandle()
+
     def disconnect(self):
         self.disconnect()
 
     def notifyHandler(self, cb):
-        self.conn.setDelegate(cb(self.conn))
-
-        self.tempCharacteristic.getDescriptors(forUUID=CCCD_UUID)[0].write(bytes([1, 0]))
-        self.humidCharacteristic.getDescriptors(forUUID=CCCD_UUID)[0].write(bytes([1, 0]))
-        self.pressCharacteristic.getDescriptors(forUUID=CCCD_UUID)[0].write(bytes([1, 0]))
-        self.sampCharacteristic.getDescriptors(forUUID=CCCD_UUID)[0].write(bytes([1, 0]))
-        self.lightIntensityCharacteristic.getDescriptors(forUUID=CCCD_UUID)[0].write(bytes([1, 0]))
-        self.controlNoticeCharacteristic.getDescriptors(forUUID=CCCD_UUID)[0].write(bytes([1, 0]))
+        self.peripheral.setDelegate(cb(self))
+        self.cb_backup = cb
 
     def sendControlInfo(self, bMes):
         response = self.controlNoticeCharacteristic.write(bytes([bMes]), withResponse=True)
         print("message sending...")
         print(response)
 
+    def isConnected(self):
+        try:
+            return self.peripheral.getState() == 'conn'
+        except:
+            return False
+
+    def connect(self):
+        if (self.isConnected() == False):
+            print("reconnecting")
+            self.peripheral.connect(self.device_addr)
+            self.peripheral.setDelegate(self.cb_backup(self))
+            self.notificationEnable()
+            self.indicationEnable()
+        return True
+
+    def notificationEnable(self):
+        self.tempCharacteristic.getDescriptors(forUUID=CCCD_UUID)[0].write(bytes([1, 0]))
+        self.humidCharacteristic.getDescriptors(forUUID=CCCD_UUID)[0].write(bytes([1, 0]))
+        self.pressCharacteristic.getDescriptors(forUUID=CCCD_UUID)[0].write(bytes([1, 0]))
+        self.sampCharacteristic.getDescriptors(forUUID=CCCD_UUID)[0].write(bytes([1, 0]))
+        self.lightIntensityCharacteristic.getDescriptors(forUUID=CCCD_UUID)[0].write(bytes([1, 0]))
+        self.controlNoticeCharacteristic.getDescriptors(forUUID=CCCD_UUID)[0].write(bytes([1, 0]))
+        self.sensorThresholdCharacteristic.getDescriptors(forUUID=CCCD_UUID)[0].write(bytes([1, 0]))
+
+    def indicationEnable(self):
+        pass
+
     def loop(self):
-        while True:
-            if self.conn.waitForNotifications(1.0):
+        while self.connect():
+            if self.peripheral.waitForNotifications(1.0):
                 continue
 
-# https://github.com/IanHarvey/bluepy/issues/360
 def sensor_acquisition_service(name, peripheral):
     print("{} threading running.".format(name))
     peripheral.notifyHandler(ReceiveDelegate)
+    peripheral.notificationEnable()
     peripheral.loop()
 
 def message_sending_service(name, peripheral):
     print("{} threading running.".format(name))
-    while True:
+    while peripheral.connect():
         peripheral.sendControlInfo(3)
         time.sleep(3)
 
 if __name__ == '__main__':
-    pService = PeripheralService(ADDR)
+    pService = PeripheralService()
     try:
-        mThread = threading.Thread(target=message_sending_service, args=('mss', pService))
+        #  mThread = threading.Thread(target=message_sending_service, args=('mss', pService))
         sThread = threading.Thread(target=sensor_acquisition_service, args=('mas', pService))
 
-        mThread.start()
+        #  mThread.start()
         sThread.start()
 
     except:

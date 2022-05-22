@@ -60,7 +60,7 @@ BLEFloatCharacteristic pressCharacteristic(PRESSURE_CHARACTERISTIC_UUID, BLERead
 BLEByteCharacteristic sampCharacteristic(SAMPLE_CHARACTERISTIC_UUID, BLERead | BLENotify);
 BLEByteCharacteristic lightIntensityCharacteristic(LIGHT_INTENSITY_CHARACTERISTIC_UUID, BLERead | BLENotify);
 BLEByteCharacteristic controlNoticeCharacteristic(CONTROL_NOTICE_CHARACTERISTIC_UUID, BLERead | BLENotify | BLEWrite);
-BLECharacteristic sensorThresholdCharacteristic(SENSOR_THRESHOLD_CHARACTERISTIC_UUID, BLERead | BLEWrite, 14, true);
+BLECharacteristic sensorThresholdCharacteristic(SENSOR_THRESHOLD_CHARACTERISTIC_UUID, BLERead | BLENotify | BLEWrite, 14, true);
 
 BLEDescriptor infoDescriptor(DESCRIPTION_NAMED_UUID, "Arduino Nano 33 BLE SENSE");
 BLEDescriptor tempDescriptor(DESCRIPTION_NAMED_UUID, "temperature message");

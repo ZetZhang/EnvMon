@@ -10,6 +10,7 @@ static TimerDelay _connTimeoutDelay(10000);
 
 static bool _connectFlag = false;
 static bool _isConnected = false;
+static bool _sensorOnceFlag = false;
 static bool _activeDisconnection = false;
 static int _sensorEnable = true;
 static int _proximityOldNum = -1;
@@ -204,6 +205,8 @@ void blePeripheralConnectHandler(BLEDevice central) {
     _isConnected = true;
     _connectFlag = false;
 
+    _sensorOnceFlag = false;
+
     cNotice->smart_reminder_flip = true;
     // sensor rework
     // _sensorEnable = true;
@@ -294,10 +297,8 @@ static void _sendToBLE() {
 }
 
 
-static bool _sensorOnceFlag = false;
-
 static void _sendSensorThresholdOnce() {
-    if (!_sensorOnceFlag) {
+    if (!_sensorOnceFlag && sensorThresholdCharacteristic.subscribed()) {
         _sensorThresholdBuffer[0] = sThreshold->gTT[0] ;
         _sensorThresholdBuffer[1] = sThreshold->gTT[1] ;
         _sensorThresholdBuffer[2] = sThreshold->gTT[2] ;
@@ -313,6 +314,7 @@ static void _sendSensorThresholdOnce() {
         _sensorThresholdBuffer[12] = sThreshold->gST[0];
         _sensorThresholdBuffer[13] = sThreshold->gST[1];
         sensorThresholdCharacteristic.writeValue(_sensorThresholdBuffer, 14);
+        _sensorOnceFlag = true;
     }
 }
 
@@ -332,6 +334,7 @@ void demo_services_start_work() {
         } else if (_connTimeoutDelay.workable()) { // active disconnection
             _connectFlag = false;
             _isConnected = false;
+            _sensorOnceFlag = false;
         }
     }
 }

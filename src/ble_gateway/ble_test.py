@@ -35,3 +35,50 @@ while True:
         continue
 
     print("Waiting...")
+
+#  def main_loop(conn):
+#      print("Connected to BLE_Server")
+#      conn.setMTU(500)
+
+#      humidService = conn.getServiceByUUID(HUMIDITY_SERVICE_UUID)
+#      pressService = conn.getServiceByUUID(PRESSURE_SERVICE_UUID)
+#      sampService = conn.getServiceByUUID(SAMPLE_SERVICE_UUID)
+#      lightService = conn.getServiceByUUID(LIGHT_INTENSITY_SERVICE_UUID)
+#      controlService = conn.getServiceByUUID(CONTROL_SERVICE_UUID)
+#      thresholdService = conn.getServiceByUUID(SENSOR_THRESHOLD_SERVICE_UUID)
+
+#      humidCharacteristic = humidService.getCharacteristics(HUMIDITY_CHARACTERISTIC_UUID)
+#      pressCharacteristic = pressService.getCharacteristics(PRESSURE_CHARACTERISTIC_UUID)
+#      sampCharacteristic = sampService.getCharacteristics(SAMPLE_CHARACTERISTIC_UUID)
+#      lightIntensityCharacteristic = lightService.getCharacteristics(LIGHT_INTENSITY_CHARACTERISTIC_UUID)
+#      controlNoticeCharacteristic = controlService.getCharacteristics(CONTROL_NOTICE_CHARACTERISTIC_UUID)
+#      sensorThresholdCharacteristic = thresholdService.getCharacteristics(SENSOR_THRESHOLD_CHARACTERISTIC_UUID)
+
+#      while True:
+#          for charac in humidCharacteristic:
+#              [humidity] = struct.unpack('f', charac.read())
+#              print("humidity data:", round(humidity, 2), "%")
+
+#          for charac in pressCharacteristic:
+#              [pressure] = struct.unpack('f', charac.read())
+#              print("pressure data:", round(pressure, 2), "kPa")
+
+#          for charac in sampCharacteristic:
+#              sample = struct.unpack('b', charac.read())
+#              print("sample data:", sample, "dB")
+
+#          for charac in lightIntensityCharacteristic:
+#              [lightIntensity] = struct.unpack('b', charac.read())
+#              print("light intensity data:", lightIntensity, "steps")
+
+#          for charac in controlNoticeCharacteristic:
+#              #  charac.write(b'\x2a');
+#              print("control data:", charac.read())
+
+#          for charac in sensorThresholdCharacteristic:
+#              thresholdList = list(charac.read())
+#              print("threshold data list: ", thresholdList)
+
+#          print("------------------------------------------")
+
+#          time.sleep(1)
