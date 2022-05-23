@@ -6,15 +6,47 @@
 
 void WsControllerServer::handleNewMessage(const WebSocketConnectionPtr& wsConnPtr, std::string &&message, const WebSocketMessageType &type)
 {
-    Json::Value ret;
     LOG_DEBUG << "from per mes: " << message;
+
     if (type == WebSocketMessageType::Ping) {
         LOG_DEBUG << "recv a ping";
     } else if (type == WebSocketMessageType::Text) {
-        wsConnPtr->send(message);
-        // auto &s = wsConnPtr->getContextRef<SubScriber>();
-        // _psService.publish(s.name, message);
+        // Json::Value root;
+        // Json::Reader reader;
+        // bool parsingSucc = reader.parse(message, root);
+        // const Json::Value identity = root["identity"];
+        // if (!identity)
+        //     return;
+        // int id = identity.asInt();
+
+        // if (id == 1) {
+        //     // redis
+        //     // postgresql
+        //     // control publish
+        //     const Json::Value control = root["control"];
+        //     int controlValue = 0;
+        //     if (control)
+        //         controlValue = control.asInt();
+        //     // threshold publish
+        //     const Json::Value threshold = root["threshold"];
+        //     int thresholdList = 0;
+        //     // if (threshold)
+        //         // thresholdList = control.as<typename T>(); // byte:14 length buffer
+
+        //     // merge and publish
+
+        //     // response
+        //     wsConnPtr->send('ok');
+        // } else if (id == 2) {
+        //     // wsConnPtr->send("fuck");
+        //     const Json::Value 
+        //     auto &s = wsConnPtr->getContextRef<SubScriber>();
+        //     _psService.publish(s.name, message);
+        // }
+        auto &s = wsConnPtr->getContextRef<SubScriber>();
+        _psService.publish(s.name, message);
     }
+    wsConnPtr->send("response");
 }
 
 void WsControllerServer::handleNewConnection(const HttpRequestPtr &req, const WebSocketConnectionPtr& wsConnPtr)
@@ -28,7 +60,7 @@ void WsControllerServer::handleNewConnection(const HttpRequestPtr &req, const We
                                      // Supress unused variable warning
                                      (void)topic;
                                      // wsConnPtr->send(message);
-                                     (void)message;
+                                     // (void)message;
                                  });
     wsConnPtr->setContext(std::make_shared<SubScriber>(std::move(s)));
 }

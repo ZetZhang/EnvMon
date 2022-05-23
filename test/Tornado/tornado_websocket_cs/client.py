@@ -44,4 +44,4 @@ class Client(object):
             self.ws.write_message("keep alive")
 
 if __name__ == '__main__':
-    client = Client("ws://localhost:12306/ws_demo", 5)
+    client = Client("ws://localhost:12340/periodicDataUpload", 5)
