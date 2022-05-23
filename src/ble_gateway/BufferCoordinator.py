@@ -103,7 +103,15 @@ class DataBuffer:
         return jsonData
 
     def getJsonData(self):
-        data = {'control': self.getControlJsonData(),
+        controlData = self.getControlJsonData()
+        thresholdData = self.getThresholdJsonData()
+        sensorData = self.getSensorJsonData()
+
+        if (controlData is None and thresholdData is None and sensorData is None):
+            return None
+
+        data = {'identity': 1,
+                'control': self.getControlJsonData(),
                 'threshold': self.getThresholdJsonData(),
                 'sensor': self.getSensorJsonData()}
         jsonData = json.dumps(data)

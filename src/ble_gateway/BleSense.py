@@ -96,12 +96,12 @@ class PeripheralService:
 
     def isConnected(self):
         try:
-            return self.peripheral.getState() == 'conn'
+            return self.peripheral.getState() is 'conn'
         except:
             return False
 
     def connect(self):
-        if (self.isConnected() == False):
+        if (self.isConnected() is False):
             print("reconnecting")
             self.peripheral.connect(self.device_addr)
             self.peripheral.setDelegate(self.cb_backup(self))

@@ -9,7 +9,7 @@ from tornado.websocket import websocket_connect
 
 import BufferCoordinator
 
-dataQueue = BufferCoordinator.DataQueue(10)
+#  dataQueue = BufferCoordinator.DataQueue(10)
 dataBuffer = BufferCoordinator.DataBuffer()
 
 class ReceiveDelegate(DefaultDelegate):
@@ -22,32 +22,32 @@ class ReceiveDelegate(DefaultDelegate):
         #  ret = {
         #          self.peripheral.getTemperatureHandle(): lambda data: print("yes"),
         #  } [cHandle](data)
-        if cHandle == self.peripheral.getTemperatureHandle():
+        if cHandle is self.peripheral.getTemperatureHandle():
             #  dataQueue.pushData('temperature', data)
             dataBuffer.setTemperature(data)
             [temperature] = struct.unpack('f', data)
             print("temperature data:", round(temperature, 2), "°C")
-        elif cHandle == self.peripheral.getHumidityHandle():
+        elif cHandle is self.peripheral.getHumidityHandle():
             #  dataQueue.pushData('humidity', data)
             dataBuffer.setHumidity(data)
             [humidity] = struct.unpack('f', data)
             print("humidity data:", round(humidity, 2), "%")
-        elif cHandle == self.peripheral.getPressureHandle():
+        elif cHandle is self.peripheral.getPressureHandle():
             #  dataQueue.pushData('pressure', data)
             dataBuffer.setPressure(data)
             [pressure] = struct.unpack('f', data)
             print("pressure data:", round(pressure, 2), "kPA")
-        elif cHandle == self.peripheral.getSampleHandle():
+        elif cHandle is self.peripheral.getSampleHandle():
             #  dataQueue.pushData('sample', data)
             dataBuffer.setSample(data)
             [sample] = struct.unpack('b', data)
             print("sample data:", sample, "dB")
-        elif cHandle == self.peripheral.getLightIntensityHandle():
+        elif cHandle is self.peripheral.getLightIntensityHandle():
             #  dataQueue.pushData('lightintensity', data)
             dataBuffer.setLightIntensity(data)
             [lightIntensity] = struct.unpack('b', data)
             print("light intensity data:", lightIntensity, "steps")
-        elif cHandle == self.peripheral.getControlNoticeHandle():
+        elif cHandle is self.peripheral.getControlNoticeHandle():
             #  dataQueue.pushData('controlnotice', data)
             dataBuffer.setControlNotice(data)
             [control] = struct.unpack('b', data)
@@ -55,7 +55,7 @@ class ReceiveDelegate(DefaultDelegate):
             lightControlStr = "on" if control & 2 else "off"
             smartReminderStr = "on" if control & 4 else "off"
             print("control data: [ light:", lightStr, ", light control:", lightControlStr, ", smart reminder:", smartReminderStr, "]")
-        elif cHandle == self.peripheral.getThresholdHandle():
+        elif cHandle is self.peripheral.getThresholdHandle():
             #  dataQueue.pushData('threshold', data)
             dataBuffer.setThreshold(data)
             thresholdList = list(data)
@@ -88,19 +88,20 @@ class wsConnect():
         while True:
             self.count += 1
             jsonData = dataBuffer.getJsonData()
-            print(jsonData)
-            #  yield self.ws.write_message('mes {}'.format(self.count))
-            yield self.ws.write_message('mes {}: {}'.format(self.count, jsonData))
+            if jsonData is not None:
+                print(jsonData)
+                yield self.ws.write_message('{}'.format(self.count, jsonData))
 
-            msg = yield self.ws.read_message()
-
-            if msg is None:
-                print("connection closed")
-                self.ws = None
-                break
-
-            print('message: {}'.format(msg))
+                msg = yield self.ws.read_message()
+                if msg is None:
+                    print("connection closed")
+                    self.ws = None
+                    break
+                self.on_message(msg)
             yield gen.sleep(1)
+
+    def on_message(self, msg):
+        print('message: {}'.format(msg))
 
     def keep_alive(self):
         if self.ws is None:
@@ -114,6 +115,14 @@ def sensor_acquisition_service():
     peripheral.notificationEnable()
     peripheral.loop()
 
+#  def recvControl():
+#      conn = websocket_connect("ws://localhost:12340/recvControl")
+#      while True:
+#          msg = conn.read_message()
+#          if msg is None:
+#              break;
+#          print(msg)
+
 if __name__ == '__main__':
     try:
         sThread = threading.Thread(target=sensor_acquisition_service)
@@ -121,17 +130,8 @@ if __name__ == '__main__':
         print("sensor acquisition threading running...")
         sThread.start()
 
-        try:
-            dataQueue.pushBuffer('temperature', 2)
-            dataQueue.pushBuffer('temperature', 2)
-            dataQueue.pushBuffer('temperature', 2)
-            print(dataQueue.popBuffer('temperature'))
-            print(dataQueue.popBuffer('temperature'))
-        except:
-            print("data queue error")
-
         print("connting...")
-        wsConnect("ws://localhost:12340/echo", 5)
+        wsConnect("ws://localhost:12340/periodicDataUpload", 5)
 
     except:
         print("start thread errro...")
