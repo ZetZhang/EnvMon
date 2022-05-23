@@ -63,7 +63,6 @@ class ReceiveDelegate(DefaultDelegate):
 
 class wsConnect():
     def __init__(self, url, timeout):
-        self.count = 0
         self.url = url
         self.timeout = timeout
         self.ioloop = IOLoop.instance()
@@ -86,11 +85,10 @@ class wsConnect():
     @gen.coroutine
     def run(self):
         while True:
-            self.count += 1
             jsonData = dataBuffer.getJsonData()
             if jsonData is not None:
                 print(jsonData)
-                yield self.ws.write_message('{}'.format(self.count, jsonData))
+                yield self.ws.write_message('{}'.format(jsonData))
 
                 msg = yield self.ws.read_message()
                 if msg is None:

@@ -96,7 +96,7 @@ class PeripheralService:
 
     def isConnected(self):
         try:
-            return self.peripheral.getState() is 'conn'
+            return self.peripheral.getState() == 'conn'
         except:
             return False
 
