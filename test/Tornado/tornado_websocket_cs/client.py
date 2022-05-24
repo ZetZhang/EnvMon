@@ -2,6 +2,8 @@ from tornado.ioloop import IOLoop, PeriodicCallback
 from tornado import gen
 from tornado.websocket import websocket_connect
 
+import json
+
 class Client(object):
     def __init__(self, url, timeout):
         self.count = 0
@@ -27,8 +29,9 @@ class Client(object):
     @gen.coroutine
     def run(self):
         while True:
-            self.count += 1
-            #  yield self.ws.write_message('{}'.format(self.count))
+            #  data = {'identity': 1,
+            #          'test': 'fuckyou'}
+            #  yield self.ws.write_message('ffffffffffffffffffffffffffffffffffffffffffffff {}'.format(json.dumps(data)))
             msg = yield self.ws.read_message()
             if msg is None:
                 print("connection closed")

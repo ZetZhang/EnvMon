@@ -23,32 +23,26 @@ class ReceiveDelegate(DefaultDelegate):
         #          self.peripheral.getTemperatureHandle(): lambda data: print("yes"),
         #  } [cHandle](data)
         if cHandle is self.peripheral.getTemperatureHandle():
-            #  dataQueue.pushData('temperature', data)
             dataBuffer.setTemperature(data)
             [temperature] = struct.unpack('f', data)
             print("temperature data:", round(temperature, 2), "°C")
         elif cHandle is self.peripheral.getHumidityHandle():
-            #  dataQueue.pushData('humidity', data)
             dataBuffer.setHumidity(data)
             [humidity] = struct.unpack('f', data)
             print("humidity data:", round(humidity, 2), "%")
         elif cHandle is self.peripheral.getPressureHandle():
-            #  dataQueue.pushData('pressure', data)
             dataBuffer.setPressure(data)
             [pressure] = struct.unpack('f', data)
             print("pressure data:", round(pressure, 2), "kPA")
         elif cHandle is self.peripheral.getSampleHandle():
-            #  dataQueue.pushData('sample', data)
             dataBuffer.setSample(data)
             [sample] = struct.unpack('b', data)
             print("sample data:", sample, "dB")
         elif cHandle is self.peripheral.getLightIntensityHandle():
-            #  dataQueue.pushData('lightintensity', data)
             dataBuffer.setLightIntensity(data)
             [lightIntensity] = struct.unpack('b', data)
             print("light intensity data:", lightIntensity, "steps")
         elif cHandle is self.peripheral.getControlNoticeHandle():
-            #  dataQueue.pushData('controlnotice', data)
             dataBuffer.setControlNotice(data)
             [control] = struct.unpack('b', data)
             lightStr = "on" if control & 1 else "off"
@@ -56,7 +50,6 @@ class ReceiveDelegate(DefaultDelegate):
             smartReminderStr = "on" if control & 4 else "off"
             print("control data: [ light:", lightStr, ", light control:", lightControlStr, ", smart reminder:", smartReminderStr, "]")
         elif cHandle is self.peripheral.getThresholdHandle():
-            #  dataQueue.pushData('threshold', data)
             dataBuffer.setThreshold(data)
             thresholdList = list(data)
             print("threshold data list:", thresholdList)
@@ -73,7 +66,6 @@ class wsConnect():
 
     @gen.coroutine
     def connect(self):
-        #  print("trying to connect")
         try:
             self.ws = yield websocket_connect(self.url)
         except:

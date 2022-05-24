@@ -15,15 +15,21 @@ void WsControllerServer::handleNewMessage(const WebSocketConnectionPtr& wsConnPt
         Json::Reader reader;
         bool parsingSucc = reader.parse(message, root);
         const Json::Value identity = root["identity"];
+        // const Json::Value control = root["control"];
+        // const Json::Value threshold = root["threshold"];
+        // const Json::Value sensor = root["sensor"];
         if (!identity)
             return;
         int id = identity.asInt();
 
-        if (id == 1) { // from gateway
+        // send back gateway state
+
+        if (id == 1) { // from gateway, hand out data
         //     // redis
         //     // postgresql
         //     // control publish
-        //     const Json::Value control = root["control"]; int controlValue = 0;
+            // const Json::Value control = root["control"]; 
+            // int controlValue = 0;
         //     if (control)
         //         controlValue = control.asInt();
         //     // threshold publish
@@ -35,7 +41,11 @@ void WsControllerServer::handleNewMessage(const WebSocketConnectionPtr& wsConnPt
         //     // merge and publish
 
         //     // response
-            wsConnPtr->send("ok");
+            // cont
+            wsConnPtr->send(message);
+            // _psService.publish(s.name, message);
+            // _psService.publish(s.name, message);
+            // _psService.publish(s.name, message);
         } else if (id == 2) { // sensor ignore
         //     // wsConnPtr->send("fuck");
         //     const Json::Value 
@@ -46,6 +56,9 @@ void WsControllerServer::handleNewMessage(const WebSocketConnectionPtr& wsConnPt
             LOG_DEBUG << "control message";
         } else if (id == 4) { // threshold
             LOG_DEBUG << "threshold message";
+        } else if (id == 0) { // other
+            LOG_DEBUG << "okfuck";
+            // wsConnPtr->send("okfuck");
         }
         auto &s = wsConnPtr->getContextRef<SubScriber>();
         _psService.publish(s.name, message);

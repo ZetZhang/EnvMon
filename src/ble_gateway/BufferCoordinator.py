@@ -1,5 +1,6 @@
 import queue
 import json
+import struct
 
 class DataQueue:
     def __init__(self, max):
@@ -35,6 +36,7 @@ class DataBuffer:
         self.threshold = ""
 
     def isSensorDataReady(self):
+        print("{}, {}, {}, {}, {}".format(self.temperature, self.humidity, self.pressure, self.sample, self.lightIntensity))
         return self.temperature != "" and self.humidity != "" and self.pressure != "" and self.sample != "" and self.lightIntensity
 
     def sensorDataReset(self):
@@ -54,23 +56,31 @@ class DataBuffer:
 
     def setTemperature(self, value):
         if isinstance(value, bytes):
-            self.temperature = str(value)
+            [val] = struct.unpack('f', value)
+            res = round(val, 2)
+            self.temperature = str(res)
 
     def setHumidity(self, value):
         if isinstance(value, bytes):
-            self.humidity = str(value)
+            [val] = struct.unpack('f', value)
+            res = round(val, 2)
+            self.humidity = str(res)
 
     def setPressure(self, value):
         if isinstance(value, bytes):
-            self.pressure = str(value)
+            [val] = struct.unpack('f', value)
+            res = round(val, 2)
+            self.pressure = str(res)
 
     def setSample(self, value):
         if isinstance(value, bytes):
-            self.sample = str(value)
+            [val] = struct.unpack('b', value)
+            self.sample = str(val)
 
     def setLightIntensity(self, value):
         if isinstance(value, bytes):
-            self.lightIntensity = str(value)
+            [val] = struct.unpack('b', value)
+            self.lightIntensity = str(val)
 
     def setControlNotice(self, value):
         self.controlFlag = True
@@ -93,8 +103,7 @@ class DataBuffer:
 
             self.sensorDataReset()
 
-            jsonData = json.dumps(data)
-            return jsonData
+            return data
         return None
 
     def getSensorJsonData(self):
@@ -114,9 +123,8 @@ class DataBuffer:
 
         self.controlDataReset()
 
-        jsonData = json.dumps(data)
         self.controlNotice = ""
-        return jsonData
+        return data
 
     def getControlJsonData(self):
         controlData = self._controlJsonData()
@@ -135,9 +143,8 @@ class DataBuffer:
 
         self.thresdDataReset()
 
-        jsonData = json.dumps(data)
         self.threshold = ""
-        return jsonData
+        return data
 
     def getThresholdJsonData(self):
         thresholdList = self._thresholdJsonData()
