@@ -11,20 +11,19 @@ void WsControllerServer::handleNewMessage(const WebSocketConnectionPtr& wsConnPt
     if (type == WebSocketMessageType::Ping) {
         LOG_DEBUG << "recv a ping";
     } else if (type == WebSocketMessageType::Text) {
-        // Json::Value root;
-        // Json::Reader reader;
-        // bool parsingSucc = reader.parse(message, root);
-        // const Json::Value identity = root["identity"];
-        // if (!identity)
-        //     return;
-        // int id = identity.asInt();
+        Json::Value root;
+        Json::Reader reader;
+        bool parsingSucc = reader.parse(message, root);
+        const Json::Value identity = root["identity"];
+        if (!identity)
+            return;
+        int id = identity.asInt();
 
-        // if (id == 1) {
+        if (id == 1) { // from gateway
         //     // redis
         //     // postgresql
         //     // control publish
-        //     const Json::Value control = root["control"];
-        //     int controlValue = 0;
+        //     const Json::Value control = root["control"]; int controlValue = 0;
         //     if (control)
         //         controlValue = control.asInt();
         //     // threshold publish
@@ -36,17 +35,22 @@ void WsControllerServer::handleNewMessage(const WebSocketConnectionPtr& wsConnPt
         //     // merge and publish
 
         //     // response
-        //     wsConnPtr->send('ok');
-        // } else if (id == 2) {
+            wsConnPtr->send("ok");
+        } else if (id == 2) { // sensor ignore
         //     // wsConnPtr->send("fuck");
         //     const Json::Value 
         //     auto &s = wsConnPtr->getContextRef<SubScriber>();
         //     _psService.publish(s.name, message);
-        // }
+            LOG_DEBUG << "error message";
+        } else if (id == 3) { // control
+            LOG_DEBUG << "control message";
+        } else if (id == 4) { // threshold
+            LOG_DEBUG << "threshold message";
+        }
         auto &s = wsConnPtr->getContextRef<SubScriber>();
         _psService.publish(s.name, message);
     }
-    wsConnPtr->send("response");
+    // wsConnPtr->send("response");
 }
 
 void WsControllerServer::handleNewConnection(const HttpRequestPtr &req, const WebSocketConnectionPtr& wsConnPtr)
@@ -59,7 +63,7 @@ void WsControllerServer::handleNewConnection(const HttpRequestPtr &req, const We
                                         const std::string &message) {
                                      // Supress unused variable warning
                                      (void)topic;
-                                     // wsConnPtr->send(message);
+                                     wsConnPtr->send(message);
                                      // (void)message;
                                  });
     wsConnPtr->setContext(std::make_shared<SubScriber>(std::move(s)));

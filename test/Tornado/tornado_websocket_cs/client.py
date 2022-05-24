@@ -28,7 +28,7 @@ class Client(object):
     def run(self):
         while True:
             self.count += 1
-            yield self.ws.write_message('{}'.format(self.count))
+            #  yield self.ws.write_message('{}'.format(self.count))
             msg = yield self.ws.read_message()
             if msg is None:
                 print("connection closed")

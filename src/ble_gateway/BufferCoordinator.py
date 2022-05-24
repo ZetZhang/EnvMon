@@ -41,7 +41,16 @@ class DataBuffer:
         self.temperature = ""
         self.humidity = ""
         self.pressure = ""
+        self.sample = ""
         self.lightIntensity = ""
+
+    def controlDataReset(self):
+        self.controlNotice = ""
+        self.controlFlag = False
+
+    def thresdDataReset(self):
+        self.threshold = ""
+        self.thresholdFlag = False
 
     def setTemperature(self, value):
         if isinstance(value, bytes):
@@ -73,46 +82,83 @@ class DataBuffer:
         if isinstance(value, bytes):
             self.threshold = str(value)
 
-    def getSensorJsonData(self):
+    def _sensorJsonData(self):
         if self.isSensorDataReady():
             data = [{'temperature': self.temperature},
                     {'humidity': self.humidity},
-                    {'pressure': self.humidity},
-                    {'lightintensity': self.lightIntensity},
-                    {'controlnotice': self.controlNotice},
-                    {'threshold': self.threshold}]
+                    {'pressure': self.pressure},
+                    {'sample': self.sample},
+                    {'lightintensity': self.lightIntensity}
+                    ]
+
+            self.sensorDataReset()
 
             jsonData = json.dumps(data)
             return jsonData
         return None
 
-    def getControlJsonData(self):
+    def getSensorJsonData(self):
+        sensorData = self._sensorJsonData()
+
+        data = {'identity': 2,
+                'sensorInfo': sensorData}
+
+        jsonData = json.dumps(data)
+        return jsonData
+
+    def _controlJsonData(self):
         if self.controlNotice == "":
             return None
+
         data = {'controlNotice': self.controlNotice}
+
+        self.controlDataReset()
+
         jsonData = json.dumps(data)
         self.controlNotice = ""
         return jsonData
 
-    def getThresholdJsonData(self):
+    def getControlJsonData(self):
+        controlData = self._controlJsonData()
+
+        data = {'identity': 3,
+                'controlNotice': controlData}
+
+        jsonData = json.dumps(data)
+        return jsonData
+
+    def _thresholdJsonData(self):
         if self.threshold == "":
             return None
+
         data = {'thresholdList': self.threshold}
+
+        self.thresdDataReset()
+
         jsonData = json.dumps(data)
         self.threshold = ""
         return jsonData
 
+    def getThresholdJsonData(self):
+        thresholdList = self._thresholdJsonData()
+
+        data = {'identity': 4,
+                'thresholdList': thresholdList}
+
+        jsonData = json.dumps(data)
+        return jsonData
+
     def getJsonData(self):
-        controlData = self.getControlJsonData()
-        thresholdData = self.getThresholdJsonData()
-        sensorData = self.getSensorJsonData()
+        controlData = self._controlJsonData()
+        thresholdData = self._thresholdJsonData()
+        sensorData = self._sensorJsonData()
 
         if (controlData is None and thresholdData is None and sensorData is None):
             return None
 
         data = {'identity': 1,
-                'control': self.getControlJsonData(),
-                'threshold': self.getThresholdJsonData(),
-                'sensor': self.getSensorJsonData()}
+                'control': controlData,
+                'threshold': thresholdData,
+                'sensor': sensorData}
         jsonData = json.dumps(data)
         return jsonData
