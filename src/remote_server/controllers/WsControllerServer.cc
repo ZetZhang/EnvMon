@@ -15,37 +15,47 @@ void WsControllerServer::handleNewMessage(const WebSocketConnectionPtr& wsConnPt
         Json::Reader reader;
         bool parsingSucc = reader.parse(message, root);
         const Json::Value identity = root["identity"];
-        // const Json::Value control = root["control"];
-        // const Json::Value threshold = root["threshold"];
-        // const Json::Value sensor = root["sensor"];
         if (!identity)
             return;
+        auto &s = wsConnPtr->getContextRef<SubScriber>();
+
         int id = identity.asInt();
-
-        // send back gateway state
-
         if (id == 1) { // from gateway, hand out data
-        //     // redis
-        //     // postgresql
-        //     // control publish
-            // const Json::Value control = root["control"]; 
-            // int controlValue = 0;
-        //     if (control)
-        //         controlValue = control.asInt();
-        //     // threshold publish
-        //     const Json::Value threshold = root["threshold"];
-        //     int thresholdList = 0;
-        //     // if (threshold)
-        //         // thresholdList = control.as<typename T>(); // byte:14 length buffer
+            // redis
+            // postgresql
 
-        //     // merge and publish
+            // merge and publish
+            Json::Value sensor = root["sensor"];
+            if (sensor) {
+                Json::Value newSensorValue;
+                Json::StreamWriterBuilder wbuilder;
+                newSensorValue["identity"] = 2;
+                newSensorValue["sensor"] = sensor;
+                std::string document = Json::writeString(wbuilder, newSensorValue);
+                _psService.publish(s.name, document);
+            }
+            //
+            // threshold publish
+            Json::Value threshold = root["threshold"];
+            if (threshold) {
+                Json::Value newThresholdValue;
+                Json::StreamWriterBuilder wbuilder;
+                newThresholdValue["identity"] = 4;
+                newThresholdValue["threshold"] = threshold;
+                std::string document = Json::writeString(wbuilder, newThresholdValue);
+                _psService.publish(s.name, document);
+            }
 
-        //     // response
-            // cont
-            wsConnPtr->send(message);
-            // _psService.publish(s.name, message);
-            // _psService.publish(s.name, message);
-            // _psService.publish(s.name, message);
+            // control publish
+            Json::Value control = root["control"];
+            if (control) {
+                Json::Value newControlValue;
+                Json::StreamWriterBuilder wbuilder;
+                newControlValue["identity"] = 3;
+                newControlValue["control"] = control;
+                std::string document = Json::writeString(wbuilder, newControlValue);
+                _psService.publish(s.name, document);
+            }
         } else if (id == 2) { // sensor ignore
         //     // wsConnPtr->send("fuck");
         //     const Json::Value 
@@ -60,7 +70,6 @@ void WsControllerServer::handleNewMessage(const WebSocketConnectionPtr& wsConnPt
             LOG_DEBUG << "okfuck";
             // wsConnPtr->send("okfuck");
         }
-        auto &s = wsConnPtr->getContextRef<SubScriber>();
         _psService.publish(s.name, message);
     }
     // wsConnPtr->send("response");

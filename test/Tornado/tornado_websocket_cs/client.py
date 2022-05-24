@@ -38,7 +38,6 @@ class Client(object):
                 self.ws = None
                 break
             print('message: {}'.format(msg))
-            yield gen.sleep(2)
 
     def keep_alive(self):
         if self.ws is None:
