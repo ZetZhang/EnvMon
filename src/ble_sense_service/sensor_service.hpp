@@ -6,7 +6,7 @@
 // timer
 static TimerDelay _sensorDelay(500);
 static TimerDelay _serviceDelay(1000);
-static TimerDelay _connTimeoutDelay(10000);
+static TimerDelay _connTimeoutDelay(15000);
 
 static bool _connectFlag = false;
 static bool _isConnected = false;

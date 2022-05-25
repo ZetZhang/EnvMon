@@ -29,15 +29,17 @@ class Client(object):
     @gen.coroutine
     def run(self):
         while True:
-            #  data = {'identity': 1,
-            #          'test': 'fuckyou'}
-            #  yield self.ws.write_message('ffffffffffffffffffffffffffffffffffffffffffffff {}'.format(json.dumps(data)))
+            data = {'identity': 3,
+                    'controlNotice': 10}
+
+            yield self.ws.write_message(json.dumps(data))
             msg = yield self.ws.read_message()
             if msg is None:
                 print("connection closed")
                 self.ws = None
                 break
             print('message: {}'.format(msg))
+            #  yield gen.sleep(1)
 
     def keep_alive(self):
         if self.ws is None:
@@ -46,4 +48,4 @@ class Client(object):
             self.ws.write_message("keep alive")
 
 if __name__ == '__main__':
-    client = Client("ws://localhost:12340/periodicDataUpload", 5)
+    client = Client("ws://localhost:12340/periodicDataUpload?who=user", 5)

@@ -29,4 +29,3 @@ struct SubScriber
     std::string name;
     drogon::SubscriberID id;
 };
-

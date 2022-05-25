@@ -2,6 +2,7 @@ from bluepy.btle import DefaultDelegate
 import BleSense
 import threading
 import struct
+import json
 
 from tornado.ioloop import IOLoop, PeriodicCallback
 from tornado import gen
@@ -67,7 +68,7 @@ class wsConnect():
     @gen.coroutine
     def connect(self):
         try:
-            self.ws = yield websocket_connect(self.url)
+            self.ws = yield websocket_connect(self.url, on_message_callback = self.on_message)
         except:
             print("connection error")
         else:
@@ -77,21 +78,24 @@ class wsConnect():
     @gen.coroutine
     def run(self):
         while True:
+            print("-------------------------------------------------------")
             jsonData = dataBuffer.getJsonData()
             if jsonData is not None:
                 print(jsonData)
-                yield self.ws.write_message('{}'.format(jsonData))
-
-                msg = yield self.ws.read_message()
-                if msg is None:
-                    print("connection closed")
-                    self.ws = None
-                    break
-                self.on_message(msg)
+                yield self.ws.write_message(jsonData)
             yield gen.sleep(1)
 
     def on_message(self, msg):
-        print('message: {}'.format(msg))
+        message = json.loads(msg)
+        identity = message["identity"]
+        if identity == 0:
+            print('get: {}'.format(message))
+        elif identity == 3:
+            print('control: {}'.format(message))
+        elif identity == 4:
+            print('threshold: {}'.format(message))
+        else:
+            print("step.....................")
 
     def keep_alive(self):
         if self.ws is None:
@@ -121,7 +125,7 @@ if __name__ == '__main__':
         sThread.start()
 
         print("connting...")
-        wsConnect("ws://localhost:12340/periodicDataUpload", 5)
+        wsConnect("ws://localhost:12340/periodicDataUpload?who=user", 5)
 
     except:
         print("start thread errro...")

@@ -36,7 +36,6 @@ class DataBuffer:
         self.threshold = ""
 
     def isSensorDataReady(self):
-        print("{}, {}, {}, {}, {}".format(self.temperature, self.humidity, self.pressure, self.sample, self.lightIntensity))
         return self.temperature != "" and self.humidity != "" and self.pressure != "" and self.sample != "" and self.lightIntensity
 
     def sensorDataReset(self):
@@ -101,7 +100,7 @@ class DataBuffer:
                     {'lightintensity': self.lightIntensity}
                     ]
 
-            self.sensorDataReset()
+            #  self.sensorDataReset()
 
             return data
         return None
@@ -112,6 +111,7 @@ class DataBuffer:
         data = {'identity': 2,
                 'sensorInfo': sensorData}
 
+        self.sensorDataReset()
         jsonData = json.dumps(data)
         return jsonData
 
@@ -121,7 +121,7 @@ class DataBuffer:
 
         data = {'controlNotice': self.controlNotice}
 
-        self.controlDataReset()
+        #  self.controlDataReset()
 
         self.controlNotice = ""
         return data
@@ -132,6 +132,7 @@ class DataBuffer:
         data = {'identity': 3,
                 'controlNotice': controlData}
 
+        self.controlDataReset()
         jsonData = json.dumps(data)
         return jsonData
 
@@ -141,7 +142,7 @@ class DataBuffer:
 
         data = {'thresholdList': self.threshold}
 
-        self.thresdDataReset()
+        #  self.thresdDataReset()
 
         self.threshold = ""
         return data
@@ -152,6 +153,7 @@ class DataBuffer:
         data = {'identity': 4,
                 'thresholdList': thresholdList}
 
+        self.thresdDataReset()
         jsonData = json.dumps(data)
         return jsonData
 
@@ -162,6 +164,12 @@ class DataBuffer:
 
         if (controlData is None and thresholdData is None and sensorData is None):
             return None
+        if controlData is not None:
+            self.controlDataReset()
+        if thresholdData is not None:
+            self.thresdDataReset()
+        if sensorData is not None:
+            self.sensorDataReset()
 
         data = {'identity': 1,
                 'control': controlData,
