@@ -33,7 +33,7 @@ class DataBuffer:
         self.sample = ""
         self.lightIntensity = ""
         self.controlNotice = ""
-        self.threshold = ""
+        self.threshold = []
 
     def isSensorDataReady(self):
         return self.temperature != "" and self.humidity != "" and self.pressure != "" and self.sample != "" and self.lightIntensity
@@ -50,7 +50,7 @@ class DataBuffer:
         self.controlFlag = False
 
     def thresdDataReset(self):
-        self.threshold = ""
+        self.threshold = []
         self.thresholdFlag = False
 
     def setTemperature(self, value):
@@ -97,7 +97,7 @@ class DataBuffer:
 
     def setThreshold(self, value):
         self.thresholdFlag = True
-        self.threshold = str(value)
+        self.threshold = value
 
     def _sensorJsonData(self):
         if self.isSensorDataReady():
@@ -141,12 +141,12 @@ class DataBuffer:
         return jsonData
 
     def _thresholdJsonData(self):
-        if self.threshold == "":
+        if self.threshold == []:
             return None
 
         data = {'thresholdList': self.threshold}
 
-        self.threshold = ""
+        self.threshold = []
         return data
 
     def getThresholdJsonData(self):
@@ -186,17 +186,24 @@ class ReceiveBuffer:
         self.thresholdFlag = False
 
         self.cData = bytes([0])
-        self.tInfo = bytes([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+        self.tInfo = bytes([])
 
     def changeControlValue(self, value):
         if isinstance(value, str):
             value = value.encode('utf-8')
-        self.controlValue = value
-        self.controlFlag = True
+            self.controlValue = value
+            self.controlFlag = True
+        elif isinstance(value, int):
+            self.controlValue = value.to_bytes(2, 'little')
+            self.controlFlag = True
 
-    def changeThresholdList(self, list):
-        self.thresholdList = list
-        self.thresholdFlag = True
+    def changeThresholdList(self, lst):
+        if isinstance(lst, list):
+            self.thresholdList = bytes(lst)
+            self.thresholdFlag = True
+        elif isinstance(lst, bytes):
+            self.thresholdList = lst
+            self.thresholdFlag = True
 
     def stealControlValue(self):
         if self.controlFlag is True:
@@ -205,7 +212,7 @@ class ReceiveBuffer:
         return None
 
     def stealThresList(self):
-        if self.stealControlValue is True:
+        if self.thresholdFlag is True:
             self.thresholdFlag = False
             return self.thresholdList
         return None

@@ -19,10 +19,6 @@ class ReceiveDelegate(DefaultDelegate):
         self.peripheral = peripheral
 
     def handleNotification(self, cHandle, data):
-        #  print("[<--]", data)
-        #  ret = {
-        #          self.peripheral.getTemperatureHandle(): lambda data: print("yes"),
-        #  } [cHandle](data)
         if cHandle is self.peripheral.getTemperatureHandle():
             dataBuffer.setTemperature(data)
             [temperature] = struct.unpack('f', data)
@@ -51,8 +47,9 @@ class ReceiveDelegate(DefaultDelegate):
             smartReminderStr = "on" if control & 4 else "off"
             print("control data: [ light:", lightStr, ", light control:", lightControlStr, ", smart reminder:", smartReminderStr, "]")
         elif cHandle is self.peripheral.getThresholdHandle():
-            dataBuffer.setThreshold(data)
+            #  dataBuffer.setThreshold(data)
             thresholdList = list(data)
+            dataBuffer.setThreshold(thresholdList)
             print("threshold data list:", thresholdList)
 
 class wsConnect():
@@ -90,9 +87,14 @@ class wsConnect():
         if identity == 0:
             print('get: {}'.format(message))
         elif identity == 3:
-            recvBuffer.changeControlValue("3")
+            cValue = message["controlNotice"]
+            if cValue is not None:
+                recvBuffer.changeControlValue(cValue)
             print('control: {}'.format(message))
         elif identity == 4:
+            tValue = message["thresholdList"]
+            if tValue is not None:
+                recvBuffer.changeThresholdList(tValue)
             print('threshold: {}'.format(message))
         else:
             print("step.....................")
@@ -112,13 +114,12 @@ def sensor_acquisition_service():
         if peripheral.peripheral.waitForNotifications(0.1):
             continue
 
-        print('---------------------------------------------------------')
         cData = recvBuffer.stealControlValue()
         if cData is not None:
             peripheral.sendControlTo(cData)
-        #  tData = recvBuffer.stealThresList()
-        #  if tData is not None:
-        #      peripheral.sendThresholdTo(tData)
+        tData = recvBuffer.stealThresList()
+        if tData is not None:
+            peripheral.sendThresholdTo(tData)
 
 if __name__ == '__main__':
     try:

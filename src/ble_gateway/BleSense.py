@@ -79,12 +79,10 @@ class PeripheralService:
         self.cb_backup = cb
 
     def sendControlTo(self, data):
-        response = self.controlNoticeCharacteristic.write(data, withResponse=True)
-        print(response)
+        self.controlNoticeCharacteristic.write(data, withResponse=True)
 
-    def sendThresholdTo(self, data):
-        response = self.sensorThresholdCharacteristic.write(info, withResponse=True)
-        print(response)
+    def sendThresholdTo(self, info):
+        self.sensorThresholdCharacteristic.write(info, withResponse=True)
 
     def isConnected(self):
         try:
