@@ -34,7 +34,7 @@ void WsControllerServer::handleNewMessage(const WebSocketConnectionPtr& wsConnPt
                 newSensorValue["identity"] = 2;
                 newSensorValue["sensor"] = sensor;
                 std::string document = Json::writeString(wbuilder, newSensorValue);
-                _psService.publish("user", document);
+                _psService.publish("users", document);
             }
 
             // control publish
@@ -45,7 +45,7 @@ void WsControllerServer::handleNewMessage(const WebSocketConnectionPtr& wsConnPt
                 newControlValue["identity"] = 3;
                 newControlValue["control"] = control;
                 std::string document = Json::writeString(wbuilder, newControlValue);
-                _psService.publish("user", document);
+                _psService.publish("users", document);
             }
 
             // threshold publish
@@ -56,17 +56,18 @@ void WsControllerServer::handleNewMessage(const WebSocketConnectionPtr& wsConnPt
                 newThresholdValue["identity"] = 4;
                 newThresholdValue["threshold"] = threshold;
                 std::string document = Json::writeString(wbuilder, newThresholdValue);
-                _psService.publish("user", document);
+                _psService.publish("users", document);
             }
 
         } else if (id == 2) { // sensor ignore
             LOG_DEBUG << "error message";
         } else if (id == 3 || id == 4) { // control or threshold changed
-            _psService.publish("user", message);
-            _psService.publish("gateway", message);
+            _psService.publish("users", message);
+            _psService.publish("gaterway", message);
 
             LOG_DEBUG << "control or threshold message";
         } else if (id == 0) { // other
+            _psService.publish("users", message);
             LOG_DEBUG << "other";
         }
     }

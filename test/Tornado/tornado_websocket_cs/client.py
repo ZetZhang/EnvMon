@@ -29,19 +29,20 @@ class Client(object):
     @gen.coroutine
     def run(self):
         while True:
+            yield gen.sleep(100)
             #  data = {'identity': 3,
             #          'controlNotice': 2}
 
 #  b''.join(map(lambda x:int.to_bytes(x,1,'little'),s))
-            value = [20, 30, 22, 28, 40, 70, 42, 67, 10, 110, 11, 109, 70, 68]
+            #  value = [20, 30, 22, 28, 40, 70, 42, 67, 10, 110, 11, 109, 70, 68]
             #  value = [70, 20, 109, 11, 110, 10, 67, 42, 70, 40, 28, 22, 30, 20]
             #  value = [98, 39, 70, 92, 120, 49, 52, 109, 92, 120, 48, 98, 110, 92]
             #  value = b''.join(map(lambda x:int.to_bytes(x, 1, 'little'), vlist))
-            data = {'identity': 4,
-                    'thresholdList': value}
+            #  data = {'identity': 4,
+            #          'thresholdList': value}
 
-            yield self.ws.write_message(json.dumps(data))
-            yield gen.sleep(1)
+            #  yield slf.ws.write_message(json.dumps(1))
+            #  yield gen.sleep(1)
 
     def on_message(self, msg):
         print('message: {}'.format(msg))
@@ -53,4 +54,4 @@ class Client(object):
             self.ws.write_message("keep alive")
 
 if __name__ == '__main__':
-    client = Client("ws://localhost:12340/periodicDataUpload?who=user", 5)
+    client = Client("ws://192.168.199.102:12340/periodicDataUpload?who=users", 5)
