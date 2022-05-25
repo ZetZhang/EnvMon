@@ -19,7 +19,7 @@ class Client(object):
     def connect(self):
         print("trying to connect")
         try:
-            self.ws = yield websocket_connect(self.url)
+            self.ws = yield websocket_connect(self.url, on_message_callback=self.on_message)
         except Exception as e:
             print("connection error")
         else:
@@ -33,13 +33,10 @@ class Client(object):
                     'controlNotice': 10}
 
             yield self.ws.write_message(json.dumps(data))
-            msg = yield self.ws.read_message()
-            if msg is None:
-                print("connection closed")
-                self.ws = None
-                break
-            print('message: {}'.format(msg))
-            #  yield gen.sleep(1)
+            yield gen.sleep(1)
+
+    def on_message(self, msg):
+        print('message: {}'.format(msg))
 
     def keep_alive(self):
         if self.ws is None:

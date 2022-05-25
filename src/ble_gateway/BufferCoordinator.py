@@ -58,38 +58,46 @@ class DataBuffer:
             [val] = struct.unpack('f', value)
             res = round(val, 2)
             self.temperature = str(res)
+        else:
+            self.temperature = str(value)
 
     def setHumidity(self, value):
         if isinstance(value, bytes):
             [val] = struct.unpack('f', value)
             res = round(val, 2)
             self.humidity = str(res)
+        else:
+            self.humidity = str(value)
 
     def setPressure(self, value):
         if isinstance(value, bytes):
             [val] = struct.unpack('f', value)
             res = round(val, 2)
             self.pressure = str(res)
+        else:
+            self.pressure = str(value)
 
     def setSample(self, value):
         if isinstance(value, bytes):
             [val] = struct.unpack('b', value)
             self.sample = str(val)
+        else:
+            self.sample = str(value)
 
     def setLightIntensity(self, value):
         if isinstance(value, bytes):
             [val] = struct.unpack('b', value)
             self.lightIntensity = str(val)
+        else:
+            self.lightIntensity = str(value)
 
     def setControlNotice(self, value):
         self.controlFlag = True
-        if isinstance(value, bytes):
-            self.controlNotice = str(value)
+        self.controlNotice = str(value)
 
     def setThreshold(self, value):
         self.thresholdFlag = True
-        if isinstance(value, bytes):
-            self.threshold = str(value)
+        self.threshold = str(value)
 
     def _sensorJsonData(self):
         if self.isSensorDataReady():
@@ -99,8 +107,6 @@ class DataBuffer:
                     {'sample': self.sample},
                     {'lightintensity': self.lightIntensity}
                     ]
-
-            #  self.sensorDataReset()
 
             return data
         return None
@@ -121,8 +127,6 @@ class DataBuffer:
 
         data = {'controlNotice': self.controlNotice}
 
-        #  self.controlDataReset()
-
         self.controlNotice = ""
         return data
 
@@ -141,8 +145,6 @@ class DataBuffer:
             return None
 
         data = {'thresholdList': self.threshold}
-
-        #  self.thresdDataReset()
 
         self.threshold = ""
         return data
@@ -177,3 +179,34 @@ class DataBuffer:
                 'sensor': sensorData}
         jsonData = json.dumps(data)
         return jsonData
+
+class ReceiveBuffer:
+    def __init__(self):
+        self.controlFlag = False
+        self.thresholdFlag = False
+
+        self.cData = bytes([0])
+        self.tInfo = bytes([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+
+    def changeControlValue(self, value):
+        if isinstance(value, str):
+            value = value.encode('utf-8')
+        self.controlValue = value
+        self.controlFlag = True
+
+    def changeThresholdList(self, list):
+        self.thresholdList = list
+        self.thresholdFlag = True
+
+    def stealControlValue(self):
+        if self.controlFlag is True:
+            self.controlFlag = False
+            return self.controlValue
+        return None
+
+    def stealThresList(self):
+        if self.stealControlValue is True:
+            self.thresholdFlag = False
+            return self.thresholdList
+        return None
+

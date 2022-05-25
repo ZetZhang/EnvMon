@@ -34,12 +34,6 @@ class PeripheralService:
         self.peripheral = Peripheral(self.device_addr)
         self.peripheral.setMTU(300)
 
-        self.controlChangedFromServer = False
-        self.thresholdChangedFromServer = False
-
-        self.cData = bytes([0])
-        self.tInfo = bytes([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
-
         self.tempService = self.peripheral.getServiceByUUID(TEMPERATURE_SERVICE_UUID) 
         self.humidService = self.peripheral.getServiceByUUID(HUMIDITY_SERVICE_UUID)
         self.pressService = self.peripheral.getServiceByUUID(PRESSURE_SERVICE_UUID)
@@ -84,14 +78,12 @@ class PeripheralService:
         self.peripheral.setDelegate(cb(self))
         self.cb_backup = cb
 
-    def sendControlData(self, data):
-        response = self.controlNoticeCharacteristic.write(bytes([3]), withResponse=True)
-        self.controlChangedFromServer = False
+    def sendControlTo(self, data):
+        response = self.controlNoticeCharacteristic.write(data, withResponse=True)
         print(response)
 
-    def sendThresholdInfo(self, info):
+    def sendThresholdTo(self, data):
         response = self.sensorThresholdCharacteristic.write(info, withResponse=True)
-        self.thresholdChangedFromServer = False
         print(response)
 
     def isConnected(self):
@@ -125,7 +117,7 @@ class PeripheralService:
         while self.connect():
             if self.peripheral.waitForNotifications(1.0):
                 continue
-            if self.controlChangedFromServer:
-                self.sendControlData(self.cData)
-            if self.thresholdChangedFromServer:
-                self.sendThresholdInfo(self.tInfo)
+            #  if self.controlChangedFromServer:
+            #      self.sendControlData(self.cData)
+            #  if self.thresholdChangedFromServer:
+            #      self.sendThresholdInfo(self.tInfo)

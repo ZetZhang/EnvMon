@@ -10,8 +10,8 @@ from tornado.websocket import websocket_connect
 
 import BufferCoordinator
 
-#  dataQueue = BufferCoordinator.DataQueue(10)
 dataBuffer = BufferCoordinator.DataBuffer()
+recvBuffer = BufferCoordinator.ReceiveBuffer()
 
 class ReceiveDelegate(DefaultDelegate):
     def __init__(self, peripheral):
@@ -78,7 +78,6 @@ class wsConnect():
     @gen.coroutine
     def run(self):
         while True:
-            print("-------------------------------------------------------")
             jsonData = dataBuffer.getJsonData()
             if jsonData is not None:
                 print(jsonData)
@@ -91,6 +90,7 @@ class wsConnect():
         if identity == 0:
             print('get: {}'.format(message))
         elif identity == 3:
+            recvBuffer.changeControlValue("3")
             print('control: {}'.format(message))
         elif identity == 4:
             print('threshold: {}'.format(message))
@@ -107,15 +107,18 @@ def sensor_acquisition_service():
     peripheral = BleSense.PeripheralService()
     peripheral.notifyHandler(ReceiveDelegate)
     peripheral.notificationEnable()
-    peripheral.loop()
+    #  peripheral.loop()
+    while peripheral.connect():
+        if peripheral.peripheral.waitForNotifications(0.1):
+            continue
 
-#  def recvControl():
-#      conn = websocket_connect("ws://localhost:12340/recvControl")
-#      while True:
-#          msg = conn.read_message()
-#          if msg is None:
-#              break;
-#          print(msg)
+        print('---------------------------------------------------------')
+        cData = recvBuffer.stealControlValue()
+        if cData is not None:
+            peripheral.sendControlTo(cData)
+        #  tData = recvBuffer.stealThresList()
+        #  if tData is not None:
+        #      peripheral.sendThresholdTo(tData)
 
 if __name__ == '__main__':
     try:
@@ -125,7 +128,7 @@ if __name__ == '__main__':
         sThread.start()
 
         print("connting...")
-        wsConnect("ws://localhost:12340/periodicDataUpload?who=user", 5)
+        wsConnect("ws://localhost:12340/periodicDataUpload?who=gateway", 5)
 
     except:
         print("start thread errro...")
