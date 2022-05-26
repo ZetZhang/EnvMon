@@ -23,10 +23,11 @@ struct SensorStateTemporaryJson
 struct Latest24HourSensorData
 {
     int hour_step_before;
-    float temperature[24];
-    float humidity[24];
-    float pressure[24];
-    float sample[24];
+    std::string dataListStringJson;
+    // float temperature[24];
+    // float humidity[24];
+    // float pressure[24];
+    // float sample[24];
 };
 
 class WsControllerServer : public drogon::WebSocketController<WsControllerServer>

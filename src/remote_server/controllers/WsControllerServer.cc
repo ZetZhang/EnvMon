@@ -10,15 +10,56 @@
 #include <string>
 
 static const std::string RESPONSE_JSON = "{\"identity\": -1}";
-static Latest24HourSensorData cache_data_g = {-1, {0}, {0}, {0}, {0}};
+static Latest24HourSensorData cache_data_g = {-1, {}};
 static SensorStateTemporaryJson sensor_sate_g = {"", ""};
 
 // FIXME: cache the datalist
+void _execCacheDataListHandler() {
+    std::cout << "sssssssssssssssssssssssssssssssssssssssssssssssssssssssssss" << std::endl;
+    orm::DbClientPtr psqlClient = app().getDbClient();
+
+    psqlClient->execSqlAsync("select temperature, humidity, pressure, sample from sensor_data_per_hours order by hour_point desc limit 24", 
+            [](const drogon::orm::Result &result) {
+                std::cout << "ooooooooooooooooooooooooooooooooooooook" << std::endl;
+                int i = 0;
+                int size = result.size();
+                Json::Value root;
+                Json::Value dList;
+                Json::StreamWriterBuilder writerBuilder;
+
+                for (auto row : result) {
+                    // cache_data_g.temperature[23-i] = 
+                    dList["temperatureList"].append(row["temperature"].as<std::string>());
+                    dList["humidityList"].append(row["humidity"].as<std::string>());
+                    dList["pressureList"].append(row["pressure"].as<std::string>());
+                    dList["sampleList"].append(row["sample"].as<std::string>());
+                    i++;
+                }
+
+                while (i++ < 24) {
+                    dList["temperatureList"].append("0.0");
+                    dList["humidityList"].append("0.0");
+                    dList["pressureList"].append("0.0");
+                    dList["sampleList"].append("0");
+                }
+
+                root["identity"] = 5;
+                root["dataList"] = dList;
+
+                cache_data_g.dataListStringJson = std::move(Json::writeString(writerBuilder, root));
+            },
+            [](const drogon::orm::DrogonDbException &e) {
+                std::cerr << "query data error:" << e.base().what() << std::endl;
+            });
+}
+
 void _execSensorInsertHandler(float temperature, float humidity, float pressure, int sample) {
     orm::DbClientPtr psqlClient = app().getDbClient();
 
     std::time_t tc = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
     int n_hour = std::put_time(std::localtime(&tc), "H")._M_tmb->tm_hour;
+
+    std::cout << "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<" << cache_data_g.hour_step_before << std::endl;
 
     if (cache_data_g.hour_step_before != -1) {
         if (n_hour > cache_data_g.hour_step_before) { // time step
@@ -40,9 +81,13 @@ void _execSensorInsertHandler(float temperature, float humidity, float pressure,
                         std::cerr << "calc data insert to sensor_data_per_hours error:" << e.base().what() << std::endl;
                     });
 
+            _execCacheDataListHandler();
             cache_data_g.hour_step_before = n_hour;
         }
+        // pass
     } else {
+        std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
+        _execCacheDataListHandler();
         cache_data_g.hour_step_before = n_hour;
     }
 
@@ -104,6 +149,7 @@ void WsControllerServer::handleNewMessage(const WebSocketConnectionPtr& wsConnPt
                 float humi = sensor["humidity"].asFloat();
                 float pres = sensor["pressure"].asFloat();
                 int sample = sensor["sample"].asInt();
+                std::cout << "]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]" << std::endl;
                 _execSensorInsertHandler(temp, humi, pres, sample);
 
                 Json::Value newSensorValue;
@@ -145,9 +191,10 @@ void WsControllerServer::handleNewMessage(const WebSocketConnectionPtr& wsConnPt
 
             LOG_DEBUG << "control or threshold message";
         } else if (id == 5) { // 24 hour data from sensor_data_per_hours tables
+            // if (cache_data_g.hour_step_before != -1)
+            wsConnPtr->send(cache_data_g.dataListStringJson);
+            std::cout << cache_data_g.dataListStringJson << std::endl;
 
-            // Json::Value newControlValue;
-            // wsConnPtr->send();
             LOG_DEBUG << "latest 24 hour data get";
         } else if (id == 0) { // keep alive
             LOG_DEBUG << "[keep alive]";
