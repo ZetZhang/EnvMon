@@ -101,12 +101,11 @@ class DataBuffer:
 
     def _sensorJsonData(self):
         if self.isSensorDataReady():
-            data = [{'temperature': self.temperature},
-                    {'humidity': self.humidity},
-                    {'pressure': self.pressure},
-                    {'sample': self.sample},
-                    {'lightintensity': self.lightIntensity}
-                    ]
+            data = {'temperature': self.temperature,
+                    'humidity': self.humidity,
+                    'pressure': self.pressure,
+                    'sample': self.sample,
+                    'lightintensity': self.lightIntensity}
 
             return data
         return None
@@ -125,7 +124,8 @@ class DataBuffer:
         if self.controlNotice == "":
             return None
 
-        data = {'controlNotice': self.controlNotice}
+        #  data = {'controlNotice': self.controlNotice}
+        data = self.controlNotice
 
         self.controlNotice = ""
         return data
@@ -144,7 +144,8 @@ class DataBuffer:
         if self.threshold == []:
             return None
 
-        data = {'thresholdList': self.threshold}
+        #  data = {'thresholdList': self.threshold}
+        data = self.threshold
 
         self.threshold = []
         return data

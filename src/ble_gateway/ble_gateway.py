@@ -87,12 +87,12 @@ class wsConnect():
         if identity == 0:
             print('get: {}'.format(message))
         elif identity == 3:
-            cValue = message["controlNotice"]
+            cValue = message["control"]
             if cValue is not None:
                 recvBuffer.changeControlValue(cValue)
             print('control: {}'.format(message))
         elif identity == 4:
-            tValue = message["thresholdList"]
+            tValue = message["threshold"]
             if tValue is not None:
                 recvBuffer.changeThresholdList(tValue)
             print('threshold: {}'.format(message))

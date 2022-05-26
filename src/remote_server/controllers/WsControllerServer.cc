@@ -5,6 +5,26 @@
 #include "rapidjson/stringbuffer.h"
 
 static const std::string RESPONSE_JSON = "{\"identity\": -1}";
+static Latest24HourSensorData cache_data_g = {-1, {0}, {0}, {0}, {0}};
+static SensorStateTemporaryJson sensor_sate_g = {"", ""};
+
+void execSensorInsertHandler(std::string message) {
+    // Json::Value root;
+    // Json::Reader reader;
+    // bool parsingSucc = reader.parse(message, root);
+    // Json::Value sensor = root["sensor"];
+    // const Json::Value sensor
+
+    // orm::DbClientPtr psqlClient = app().getDbClient();
+    // psqlClient->execSqlAsync("insert into sensor_data(temperature, humidity, pressure, sample, point) values($1, $2, $3, $4, current_timestamp)",
+    //         [](const drogon::orm::Result &result) {
+
+    //         },
+    //         [](const drogon::orm::DrogonDbException &e) {
+    //             std::cerr << "sensor data insert error:" << e.base().what() << std::endl;
+    //         },
+    //         1, 2, 3, 4);
+}
 
 void WsControllerServer::handleNewMessage(const WebSocketConnectionPtr& wsConnPtr, std::string &&message, const WebSocketMessageType &type)
 {
@@ -13,49 +33,64 @@ void WsControllerServer::handleNewMessage(const WebSocketConnectionPtr& wsConnPt
     if (type == WebSocketMessageType::Ping) {
         LOG_DEBUG << "recv a ping";
     } else if (type == WebSocketMessageType::Text) {
+        bool res;
+        JSONCPP_STRING errs;
         Json::Value root;
         Json::Reader reader;
-        bool parsingSucc = reader.parse(message, root);
+        Json::CharReaderBuilder readerBuilder;
+        Json::StreamWriterBuilder writerBuilder;
+
+        std::unique_ptr<Json::CharReader> const jsonReader(readerBuilder.newCharReader());
+
+        res = jsonReader->parse(message.c_str(), message.c_str()+message.length(), &root, &errs);
+        if (!res || !errs.empty())
+            std::cout << "parseJson error: " << errs << std::endl;
+
+        // bool parsingSucc = reader.parse(message, root);
         const Json::Value identity = root["identity"];
         if (!identity)
             return;
+
         auto &s = wsConnPtr->getContextRef<SubScriber>();
 
         int id = identity.asInt();
         if (id == 1) { // from gateway, hand out data
-            // redis
-            // postgresql
+            const Json::Value sensor = root["sensor"];
+            const Json::Value control = root["control"];
+            const Json::Value threshold = root["threshold"];
 
             // merge and publish
-            Json::Value sensor = root["sensor"];
             if (sensor) {
+                execSensorInsertHandler(message);
+
                 Json::Value newSensorValue;
-                Json::StreamWriterBuilder wbuilder;
                 newSensorValue["identity"] = 2;
                 newSensorValue["sensor"] = sensor;
-                std::string document = Json::writeString(wbuilder, newSensorValue);
+                std::string document = Json::writeString(writerBuilder, newSensorValue);
+
                 _psService.publish("users", document);
             }
 
             // control publish
-            Json::Value control = root["control"];
             if (control) {
                 Json::Value newControlValue;
-                Json::StreamWriterBuilder wbuilder;
                 newControlValue["identity"] = 3;
                 newControlValue["control"] = control;
-                std::string document = Json::writeString(wbuilder, newControlValue);
+                std::string document = Json::writeString(writerBuilder, newControlValue);
+
+                sensor_sate_g.contorlMes = document;
+
                 _psService.publish("users", document);
             }
 
             // threshold publish
-            Json::Value threshold = root["threshold"];
             if (threshold) {
                 Json::Value newThresholdValue;
-                Json::StreamWriterBuilder wbuilder;
                 newThresholdValue["identity"] = 4;
                 newThresholdValue["threshold"] = threshold;
-                std::string document = Json::writeString(wbuilder, newThresholdValue);
+                std::string document = Json::writeString(writerBuilder, newThresholdValue);
+                sensor_sate_g.thresholdMes = document;
+
                 _psService.publish("users", document);
             }
 
@@ -63,12 +98,14 @@ void WsControllerServer::handleNewMessage(const WebSocketConnectionPtr& wsConnPt
             LOG_DEBUG << "error message";
         } else if (id == 3 || id == 4) { // control or threshold changed
             _psService.publish("users", message);
-            _psService.publish("gaterway", message);
+            _psService.publish("gateway", message);
 
             LOG_DEBUG << "control or threshold message";
+        } else if (id == 5) {
+            LOG_DEBUG << "reserve";
         } else if (id == 0) { // other
             _psService.publish("users", message);
-            LOG_DEBUG << "other";
+            LOG_DEBUG << "[TEST]";
         }
     }
 }
@@ -76,6 +113,12 @@ void WsControllerServer::handleNewMessage(const WebSocketConnectionPtr& wsConnPt
 void WsControllerServer::handleNewConnection(const HttpRequestPtr &req, const WebSocketConnectionPtr& wsConnPtr)
 {
     LOG_DEBUG << "new websocket connection..";
+    // send to control & threshold info
+    if (sensor_sate_g.contorlMes != "")
+        wsConnPtr->send(sensor_sate_g.contorlMes);
+    if (sensor_sate_g.thresholdMes != "")
+        wsConnPtr->send(sensor_sate_g.thresholdMes);
+
     SubScriber s;
     s.name= req->getParameter("who");
     s.id = _psService.subscribe(s.name,
