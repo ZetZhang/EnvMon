@@ -31,19 +31,19 @@ class DataBuffer:
         self.humidity = 0.0
         self.pressure = 0.0
         self.sample = 0
-        self.lightIntensity = 0
+        self.lightIntensity = -200
         self.controlNotice = -1
         self.threshold = []
 
     def isSensorDataReady(self):
-        return self.temperature != 0.0 and self.humidity != 0.0 and self.pressure != 0.0 and self.sample != 0 and self.lightIntensity != 0
+        return self.temperature != 0.0 and self.humidity != 0.0 and self.pressure != 0.0 and self.sample != 0 and self.lightIntensity != -200
 
     def sensorDataReset(self):
         self.temperature = 0.0
         self.humidity = 0.0
         self.pressure = 0.0
         self.sample = 0
-        self.lightIntensity = 0
+        self.lightIntensity = -200
 
     def controlDataReset(self):
         self.controlNotice = -1
@@ -170,6 +170,7 @@ class DataBuffer:
 
         if (controlData is None and thresholdData is None and sensorData is None):
             return None
+
         if controlData is not None:
             self.controlDataReset()
         if thresholdData is not None:

@@ -76,7 +76,7 @@ class wsConnect():
         while True:
             jsonData = dataBuffer.getJsonData()
             if jsonData is not None:
-                print("send ..............................................................")
+                print(jsonData)
                 yield self.ws.write_message(jsonData)
             yield gen.sleep(1)
 

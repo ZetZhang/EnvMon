@@ -13,9 +13,7 @@ static const std::string RESPONSE_JSON = "{\"identity\": -1}";
 static Latest24HourSensorData cache_data_g = {-1, {}};
 static SensorStateTemporaryJson sensor_sate_g = {"", ""};
 
-// FIXME: cache the datalist
 void _execCacheDataListHandler() {
-    std::cout << "sssssssssssssssssssssssssssssssssssssssssssssssssssssssssss" << std::endl;
     orm::DbClientPtr psqlClient = app().getDbClient();
 
     psqlClient->execSqlAsync("select temperature, humidity, pressure, sample from sensor_data_per_hours order by hour_point desc limit 24", 
@@ -59,8 +57,6 @@ void _execSensorInsertHandler(float temperature, float humidity, float pressure,
     std::time_t tc = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
     int n_hour = std::put_time(std::localtime(&tc), "H")._M_tmb->tm_hour;
 
-    std::cout << "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<" << cache_data_g.hour_step_before << std::endl;
-
     if (cache_data_g.hour_step_before != -1) {
         if (n_hour > cache_data_g.hour_step_before) { // time step
 
@@ -86,9 +82,11 @@ void _execSensorInsertHandler(float temperature, float humidity, float pressure,
         }
         // pass
     } else {
-        std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
         _execCacheDataListHandler();
-        cache_data_g.hour_step_before = n_hour;
+        auto result = psqlClient->execSqlSync("select point from sensor_data order by point desc limit 1");
+
+        for (auto row : result)
+            cache_data_g.hour_step_before = stoi(row["point"].as<std::string>().substr(11, 2));
     }
 
     psqlClient->execSqlAsync("insert into sensor_data(temperature, humidity, pressure, sample, point) values($1, $2, $3, $4, current_timestamp)",
@@ -149,7 +147,6 @@ void WsControllerServer::handleNewMessage(const WebSocketConnectionPtr& wsConnPt
                 float humi = sensor["humidity"].asFloat();
                 float pres = sensor["pressure"].asFloat();
                 int sample = sensor["sample"].asInt();
-                std::cout << "]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]" << std::endl;
                 _execSensorInsertHandler(temp, humi, pres, sample);
 
                 Json::Value newSensorValue;
@@ -191,9 +188,12 @@ void WsControllerServer::handleNewMessage(const WebSocketConnectionPtr& wsConnPt
 
             LOG_DEBUG << "control or threshold message";
         } else if (id == 5) { // 24 hour data from sensor_data_per_hours tables
-            // if (cache_data_g.hour_step_before != -1)
-            wsConnPtr->send(cache_data_g.dataListStringJson);
-            std::cout << cache_data_g.dataListStringJson << std::endl;
+            if (cache_data_g.hour_step_before != -1)
+                wsConnPtr->send(cache_data_g.dataListStringJson);
+            else {
+                _execCacheDataListHandler();
+                wsConnPtr->send(cache_data_g.dataListStringJson);
+            }
 
             LOG_DEBUG << "latest 24 hour data get";
         } else if (id == 0) { // keep alive
