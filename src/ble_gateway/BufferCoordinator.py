@@ -129,7 +129,6 @@ class DataBuffer:
         if self.controlNotice == -1:
             return None
 
-        #  data = {'controlNotice': self.controlNotice}
         data = self.controlNotice
 
         self.controlNotice = -1
@@ -149,7 +148,6 @@ class DataBuffer:
         if self.threshold == []:
             return None
 
-        #  data = {'thresholdList': self.threshold}
         data = self.threshold
 
         self.threshold = []
@@ -195,24 +193,16 @@ class ReceiveBuffer:
         self.tInfo = bytes([])
 
     def changeControlValue(self, value):
-        if isinstance(value, str):
-            value = value.encode('utf-8')
-            self.controlValue = value
-            self.controlFlag = True
-        elif isinstance(value, int):
-            self.controlValue = value.to_bytes(2, 'little')
-            self.controlFlag = True
+        self.controlValue = value
+        self.controlFlag = True
 
     def changeThresholdList(self, lst):
-        if isinstance(lst, list):
-            self.thresholdList = bytes(lst)
-            self.thresholdFlag = True
-        elif isinstance(lst, bytes):
-            self.thresholdList = lst
-            self.thresholdFlag = True
+        self.thresholdList = lst
+        self.thresholdFlag = True
 
     def stealControlValue(self):
         if self.controlFlag is True:
+            print("-------------------------------------------------------------{}".format(self.controlValue))
             self.controlFlag = False
             return self.controlValue
         return None

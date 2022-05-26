@@ -4,20 +4,56 @@
 #include "rapidjson/writer.h"
 #include "rapidjson/stringbuffer.h"
 
+#include <iomanip>
+#include <ctime>
+#include <chrono>
+#include <string>
+
 static const std::string RESPONSE_JSON = "{\"identity\": -1}";
 static Latest24HourSensorData cache_data_g = {-1, {0}, {0}, {0}, {0}};
 static SensorStateTemporaryJson sensor_sate_g = {"", ""};
 
+// FIXME: cache the datalist
 void _execSensorInsertHandler(float temperature, float humidity, float pressure, int sample) {
     orm::DbClientPtr psqlClient = app().getDbClient();
+
+    std::time_t tc = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+    int n_hour = std::put_time(std::localtime(&tc), "H")._M_tmb->tm_hour;
+
+    if (cache_data_g.hour_step_before != -1) {
+        if (n_hour > cache_data_g.hour_step_before) { // time step
+
+            // data calc and move completed
+            psqlClient->execSqlAsync("insert into sensor_data_per_hours(temperature, humidity, pressure, sample, hour_point) select avg(old.temperature), avg(old.humidity), avg(old.pressure), avg(old.sample), current_timestamp from sensor_data old", 
+                    [](const drogon::orm::Result &result) {
+                        std::cout << "data moveda: " << result.size() <<  " executed !!!" << std::endl;
+                    },
+                    [](const drogon::orm::DrogonDbException &e) {
+                        std::cerr << "truncate sensor_data error:" << e.base().what() << std::endl;
+                    });
+
+            psqlClient->execSqlAsync("truncate sensor_data restart identity", 
+                    [](const drogon::orm::Result &result) {
+                        std::cout << "truncate sensor_data: " << result.size() <<  " executed !!!" << std::endl;
+                    },
+                    [](const drogon::orm::DrogonDbException &e) {
+                        std::cerr << "calc data insert to sensor_data_per_hours error:" << e.base().what() << std::endl;
+                    });
+
+            cache_data_g.hour_step_before = n_hour;
+        }
+    } else {
+        cache_data_g.hour_step_before = n_hour;
+    }
+
     psqlClient->execSqlAsync("insert into sensor_data(temperature, humidity, pressure, sample, point) values($1, $2, $3, $4, current_timestamp)",
             [](const drogon::orm::Result &result) {
-
+                std::cout << "insert sensor data: " << result.size() <<  " executed !!!" << std::endl;
             },
             [](const drogon::orm::DrogonDbException &e) {
                 std::cerr << "sensor data insert error:" << e.base().what() << std::endl;
             },
-            temperature, humidity, pressure, sample);
+            std::to_string(temperature), std::to_string(humidity), std::to_string(pressure), std::to_string(sample));
 }
 
 void WsControllerServer::handleNewMessage(const WebSocketConnectionPtr& wsConnPtr, std::string &&message, const WebSocketMessageType &type)
@@ -27,6 +63,10 @@ void WsControllerServer::handleNewMessage(const WebSocketConnectionPtr& wsConnPt
     if (type == WebSocketMessageType::Ping) {
         LOG_DEBUG << "recv a ping";
     } else if (type == WebSocketMessageType::Text) {
+        if (message == "keep alive") {
+            wsConnPtr->send("ok");
+            return;
+        }
         bool res;
         JSONCPP_STRING errs;
         Json::Value root;
@@ -37,12 +77,18 @@ void WsControllerServer::handleNewMessage(const WebSocketConnectionPtr& wsConnPt
         std::unique_ptr<Json::CharReader> const jsonReader(readerBuilder.newCharReader());
 
         res = jsonReader->parse(message.c_str(), message.c_str()+message.length(), &root, &errs);
-        if (!res || !errs.empty())
+        if (!res || !errs.empty()) {
             std::cout << "parseJson error: " << errs << std::endl;
+            wsConnPtr->send("json parse error");
+            return;
+        }
 
         const Json::Value identity = root["identity"];
-        if (!identity)
+        if (!identity) {
+            std::cout << "identity error: " << errs << std::endl;
+            wsConnPtr->send("identity error");
             return;
+        }
 
         auto &s = wsConnPtr->getContextRef<SubScriber>();
 
@@ -58,7 +104,7 @@ void WsControllerServer::handleNewMessage(const WebSocketConnectionPtr& wsConnPt
                 float humi = sensor["humidity"].asFloat();
                 float pres = sensor["pressure"].asFloat();
                 int sample = sensor["sample"].asInt();
-                // _execSensorInsertHandler(temp, humi, pres, sample);
+                _execSensorInsertHandler(temp, humi, pres, sample);
 
                 Json::Value newSensorValue;
                 newSensorValue["identity"] = 2;
@@ -98,11 +144,13 @@ void WsControllerServer::handleNewMessage(const WebSocketConnectionPtr& wsConnPt
             _psService.publish("gateway", message);
 
             LOG_DEBUG << "control or threshold message";
-        } else if (id == 5) {
-            LOG_DEBUG << "reserve";
-        } else if (id == 0) { // other
-            _psService.publish("users", message);
-            LOG_DEBUG << "[TEST]";
+        } else if (id == 5) { // 24 hour data from sensor_data_per_hours tables
+
+            // Json::Value newControlValue;
+            // wsConnPtr->send();
+            LOG_DEBUG << "latest 24 hour data get";
+        } else if (id == 0) { // keep alive
+            LOG_DEBUG << "[keep alive]";
         }
     }
 }

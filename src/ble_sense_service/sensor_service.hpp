@@ -228,11 +228,11 @@ void recvNoticeHandler(BLEDevice central, BLECharacteristic characteristic) {
 #endif
     if (controlNoticeCharacteristic.value()) {
         controlNoticeCharacteristic.readValue(_controlByte);
-        cNotice->light_flip_control = (_controlByte & 0x02);
+        cNotice->light_flip_control = (_controlByte & 0x02) ? true : false;
         if (_controlByte & 0x02)
             cNotice->light_flip = (_controlByte & 0x01) ? true : false;
 
-        mBuffer->smart_reminder_flip_store(_controlByte & 0x04);
+        cNotice->smart_reminder_flip = _controlByte & 0x04;
     } else {
 #ifdef DEBUG_MODEL
         Serial.println("Recv notice error...");

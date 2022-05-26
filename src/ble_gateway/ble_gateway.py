@@ -76,7 +76,7 @@ class wsConnect():
         while True:
             jsonData = dataBuffer.getJsonData()
             if jsonData is not None:
-                print(jsonData)
+                print("send ..............................................................")
                 yield self.ws.write_message(jsonData)
             yield gen.sleep(1)
 
@@ -102,7 +102,7 @@ class wsConnect():
         if self.ws is None:
             self.connect()
         else:
-            self.ws.write_message("keep alive")
+            self.ws.write_message(json.dumps({'identity': 0}))
 
 def sensor_acquisition_service():
     peripheral = BleSense.PeripheralService()
