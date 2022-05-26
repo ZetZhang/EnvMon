@@ -17,7 +17,7 @@
             //address: Ip address,0.0.0.0 by default
             "address": "0.0.0.0",
             //port: Port number
-            "port": 80,
+            "port": 12340,
             //https: If true, use https for security,false by default
             "https": false
         },
@@ -47,9 +47,9 @@
             //host: Server address,localhost by default
             "host": "127.0.0.1",
             //port: Server port, 5432 by default
-            "port": 5432,
+            "port": 12341,
             //dbname: Database name
-            "dbname": "test",
+            "dbname": "sensor",
             //user: 'postgres' by default
             "user": "",
             //passwd: '' by default

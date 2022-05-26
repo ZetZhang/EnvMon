@@ -27,26 +27,26 @@ class DataBuffer:
     def __init__(self):
         self.controlFlag = False
         self.thresholdFlag = False
-        self.temperature = ""
-        self.humidity = ""
-        self.pressure = ""
-        self.sample = ""
-        self.lightIntensity = ""
-        self.controlNotice = ""
+        self.temperature = 0.0
+        self.humidity = 0.0
+        self.pressure = 0.0
+        self.sample = 0
+        self.lightIntensity = 0
+        self.controlNotice = -1
         self.threshold = []
 
     def isSensorDataReady(self):
-        return self.temperature != "" and self.humidity != "" and self.pressure != "" and self.sample != "" and self.lightIntensity
+        return self.temperature != 0.0 and self.humidity != 0.0 and self.pressure != 0.0 and self.sample != 0 and self.lightIntensity != 0
 
     def sensorDataReset(self):
-        self.temperature = ""
-        self.humidity = ""
-        self.pressure = ""
-        self.sample = ""
-        self.lightIntensity = ""
+        self.temperature = 0.0
+        self.humidity = 0.0
+        self.pressure = 0.0
+        self.sample = 0
+        self.lightIntensity = 0
 
     def controlDataReset(self):
-        self.controlNotice = ""
+        self.controlNotice = -1
         self.controlFlag = False
 
     def thresdDataReset(self):
@@ -57,43 +57,48 @@ class DataBuffer:
         if isinstance(value, bytes):
             [val] = struct.unpack('f', value)
             res = round(val, 2)
-            self.temperature = str(res)
+            self.temperature = res
         else:
-            self.temperature = str(value)
+            self.temperature = value
 
     def setHumidity(self, value):
         if isinstance(value, bytes):
             [val] = struct.unpack('f', value)
             res = round(val, 2)
-            self.humidity = str(res)
+            self.humidity = res
         else:
-            self.humidity = str(value)
+            self.humidity = value
 
     def setPressure(self, value):
         if isinstance(value, bytes):
             [val] = struct.unpack('f', value)
             res = round(val, 2)
-            self.pressure = str(res)
+            self.pressure = res
         else:
-            self.pressure = str(value)
+            self.pressure = value
 
     def setSample(self, value):
         if isinstance(value, bytes):
-            [val] = struct.unpack('b', value)
-            self.sample = str(val)
+            val = int().from_bytes(value, byteorder='big', signed=True)
+            self.sample = val
         else:
-            self.sample = str(value)
+            self.sample = value
 
     def setLightIntensity(self, value):
         if isinstance(value, bytes):
-            [val] = struct.unpack('b', value)
-            self.lightIntensity = str(val)
+            val = int().from_bytes(value, byteorder='big', signed=True)
+            self.lightIntensity = val
         else:
-            self.lightIntensity = str(value)
+            self.lightIntensity = value
 
     def setControlNotice(self, value):
-        self.controlFlag = True
-        self.controlNotice = str(value)
+        if isinstance(value, bytes):
+            self.controlFlag = True
+            val = int().from_bytes(value, byteorder='big', signed=True)
+            self.controlNotice = val
+        else:
+            self.controlFlag = True
+            self.controlNotice = value
 
     def setThreshold(self, value):
         self.thresholdFlag = True
@@ -121,13 +126,13 @@ class DataBuffer:
         return jsonData
 
     def _controlJsonData(self):
-        if self.controlNotice == "":
+        if self.controlNotice == -1:
             return None
 
         #  data = {'controlNotice': self.controlNotice}
         data = self.controlNotice
 
-        self.controlNotice = ""
+        self.controlNotice = -1
         return data
 
     def getControlJsonData(self):

@@ -110,12 +110,3 @@ class PeripheralService:
 
     def indicationEnable(self):
         pass
-
-    def loop(self):
-        while self.connect():
-            if self.peripheral.waitForNotifications(1.0):
-                continue
-            #  if self.controlChangedFromServer:
-            #      self.sendControlData(self.cData)
-            #  if self.thresholdChangedFromServer:
-            #      self.sendThresholdInfo(self.tInfo)

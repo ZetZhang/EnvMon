@@ -47,7 +47,6 @@ class ReceiveDelegate(DefaultDelegate):
             smartReminderStr = "on" if control & 4 else "off"
             print("control data: [ light:", lightStr, ", light control:", lightControlStr, ", smart reminder:", smartReminderStr, "]")
         elif cHandle is self.peripheral.getThresholdHandle():
-            #  dataBuffer.setThreshold(data)
             thresholdList = list(data)
             dataBuffer.setThreshold(thresholdList)
             print("threshold data list:", thresholdList)
@@ -109,7 +108,6 @@ def sensor_acquisition_service():
     peripheral = BleSense.PeripheralService()
     peripheral.notifyHandler(ReceiveDelegate)
     peripheral.notificationEnable()
-    #  peripheral.loop()
     while peripheral.connect():
         if peripheral.peripheral.waitForNotifications(0.1):
             continue

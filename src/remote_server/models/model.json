@@ -6,20 +6,20 @@
     //host: server address,localhost by default;
     "host": "127.0.0.1",
     //port: server port, 5432 by default;
-    "port": 5432,
+    "port": 12341,
     //dbname: Database name;
-    "dbname": "",
+    "dbname": "sensor",
     //schema: valid for postgreSQL, "public" by default;
     "schema": "public",
     //user: User name
-    "user": "",
+    "user": "postgres",
     //password or passwd: Password
     "password": "",
     //client_encoding: The character set used by drogon_ctl. it is empty string by default which 
     //means use the default character set.
     //"client_encoding": "",
     //table: An array of tables to be modelized. if the array is empty, all revealed tables are modelized.
-    "tables": [],
+    "tables": ["sensor_data", "sensor_data_per_hours"],
     //convert: the value can be changed by a function call before it is stored into database or
     //after it is read from database
     "convert": {

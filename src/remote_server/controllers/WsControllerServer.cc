@@ -8,22 +8,16 @@ static const std::string RESPONSE_JSON = "{\"identity\": -1}";
 static Latest24HourSensorData cache_data_g = {-1, {0}, {0}, {0}, {0}};
 static SensorStateTemporaryJson sensor_sate_g = {"", ""};
 
-void execSensorInsertHandler(std::string message) {
-    // Json::Value root;
-    // Json::Reader reader;
-    // bool parsingSucc = reader.parse(message, root);
-    // Json::Value sensor = root["sensor"];
-    // const Json::Value sensor
+void _execSensorInsertHandler(float temperature, float humidity, float pressure, int sample) {
+    orm::DbClientPtr psqlClient = app().getDbClient();
+    psqlClient->execSqlAsync("insert into sensor_data(temperature, humidity, pressure, sample, point) values($1, $2, $3, $4, current_timestamp)",
+            [](const drogon::orm::Result &result) {
 
-    // orm::DbClientPtr psqlClient = app().getDbClient();
-    // psqlClient->execSqlAsync("insert into sensor_data(temperature, humidity, pressure, sample, point) values($1, $2, $3, $4, current_timestamp)",
-    //         [](const drogon::orm::Result &result) {
-
-    //         },
-    //         [](const drogon::orm::DrogonDbException &e) {
-    //             std::cerr << "sensor data insert error:" << e.base().what() << std::endl;
-    //         },
-    //         1, 2, 3, 4);
+            },
+            [](const drogon::orm::DrogonDbException &e) {
+                std::cerr << "sensor data insert error:" << e.base().what() << std::endl;
+            },
+            temperature, humidity, pressure, sample);
 }
 
 void WsControllerServer::handleNewMessage(const WebSocketConnectionPtr& wsConnPtr, std::string &&message, const WebSocketMessageType &type)
@@ -46,7 +40,6 @@ void WsControllerServer::handleNewMessage(const WebSocketConnectionPtr& wsConnPt
         if (!res || !errs.empty())
             std::cout << "parseJson error: " << errs << std::endl;
 
-        // bool parsingSucc = reader.parse(message, root);
         const Json::Value identity = root["identity"];
         if (!identity)
             return;
@@ -61,7 +54,11 @@ void WsControllerServer::handleNewMessage(const WebSocketConnectionPtr& wsConnPt
 
             // merge and publish
             if (sensor) {
-                execSensorInsertHandler(message);
+                float temp = sensor["temperature"].asFloat();
+                float humi = sensor["humidity"].asFloat();
+                float pres = sensor["pressure"].asFloat();
+                int sample = sensor["sample"].asInt();
+                // _execSensorInsertHandler(temp, humi, pres, sample);
 
                 Json::Value newSensorValue;
                 newSensorValue["identity"] = 2;
