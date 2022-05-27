@@ -31,19 +31,19 @@ class DataBuffer:
         self.humidity = 0.0
         self.pressure = 0.0
         self.sample = 0
-        self.lightIntensity = -200
+        self.lightIntensity = -1
         self.controlNotice = -1
         self.threshold = []
 
     def isSensorDataReady(self):
-        return self.temperature != 0.0 and self.humidity != 0.0 and self.pressure != 0.0 and self.sample != 0 and self.lightIntensity != -200
+        return self.temperature != 0.0 and self.humidity != 0.0 and self.pressure != 0.0 and self.sample != 0 and self.lightIntensity > -1
 
     def sensorDataReset(self):
         self.temperature = 0.0
         self.humidity = 0.0
         self.pressure = 0.0
         self.sample = 0
-        self.lightIntensity = -200
+        self.lightIntensity = -1
 
     def controlDataReset(self):
         self.controlNotice = -1
@@ -79,14 +79,14 @@ class DataBuffer:
 
     def setSample(self, value):
         if isinstance(value, bytes):
-            val = int().from_bytes(value, byteorder='big', signed=True)
+            val = int().from_bytes(value, byteorder='big', signed=False)
             self.sample = val
         else:
             self.sample = value
 
     def setLightIntensity(self, value):
         if isinstance(value, bytes):
-            val = int().from_bytes(value, byteorder='big', signed=True)
+            val = int().from_bytes(value, byteorder='big', signed=False)
             self.lightIntensity = val
         else:
             self.lightIntensity = value
@@ -94,7 +94,7 @@ class DataBuffer:
     def setControlNotice(self, value):
         if isinstance(value, bytes):
             self.controlFlag = True
-            val = int().from_bytes(value, byteorder='big', signed=True)
+            val = int().from_bytes(value, byteorder='big', signed=False)
             self.controlNotice = val
         else:
             self.controlFlag = True

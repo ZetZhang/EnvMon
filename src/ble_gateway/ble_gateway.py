@@ -37,7 +37,8 @@ class ReceiveDelegate(DefaultDelegate):
             print("sample data:", sample, "dB")
         elif cHandle is self.peripheral.getLightIntensityHandle():
             dataBuffer.setLightIntensity(data)
-            [lightIntensity] = struct.unpack('b', data)
+            #  [lightIntensity] = struct.unpack('b', data)
+            lightIntensity = int().from_bytes(data, byteorder='big', signed=False)
             print("light intensity data:", lightIntensity, "steps")
         elif cHandle is self.peripheral.getControlNoticeHandle():
             dataBuffer.setControlNotice(data)
