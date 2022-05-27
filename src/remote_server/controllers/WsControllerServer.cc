@@ -22,27 +22,25 @@ void _execCacheDataListHandler() {
                 int i = 0;
                 int size = result.size();
                 Json::Value root;
-                Json::Value dList;
                 Json::StreamWriterBuilder writerBuilder;
 
                 for (auto row : result) {
                     // cache_data_g.temperature[23-i] = 
-                    dList["temperatureList"].append(row["temperature"].as<std::string>());
-                    dList["humidityList"].append(row["humidity"].as<std::string>());
-                    dList["pressureList"].append(row["pressure"].as<std::string>());
-                    dList["sampleList"].append(row["sample"].as<std::string>());
+                    root["temperatureList"].append(row["temperature"].as<std::string>());
+                    root["humidityList"].append(row["humidity"].as<std::string>());
+                    root["pressureList"].append(row["pressure"].as<std::string>());
+                    root["sampleList"].append(row["sample"].as<std::string>());
                     i++;
                 }
 
                 while (i++ < 24) {
-                    dList["temperatureList"].append("0.0");
-                    dList["humidityList"].append("0.0");
-                    dList["pressureList"].append("0.0");
-                    dList["sampleList"].append("0");
+                    root["temperatureList"].append("0.0");
+                    root["humidityList"].append("0.0");
+                    root["pressureList"].append("0.0");
+                    root["sampleList"].append("0");
                 }
 
                 root["identity"] = 5;
-                root["dataList"] = dList;
 
                 cache_data_g.dataListStringJson = std::move(Json::writeString(writerBuilder, root));
             },
@@ -57,11 +55,13 @@ void _execSensorInsertHandler(float temperature, float humidity, float pressure,
     std::time_t tc = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
     int n_hour = std::put_time(std::localtime(&tc), "H")._M_tmb->tm_hour;
 
+    std::cout << "currentTime: " << n_hour << ", latestTime: " << cache_data_g.hour_step_before << std::endl;
+
     if (cache_data_g.hour_step_before != -1) {
         if (n_hour > cache_data_g.hour_step_before) { // time step
 
             // data calc and move completed
-            psqlClient->execSqlAsync("insert into sensor_data_per_hours(temperature, humidity, pressure, sample, hour_point) select avg(old.temperature), avg(old.humidity), avg(old.pressure), avg(old.sample), current_timestamp from sensor_data old", 
+            psqlClient->execSqlAsync("insert into sensor_data_per_hours(temperature, humidity, pressure, sample, hour_point) select avg(old.temperature), avg(old.humidity), avg(old.pressure), avg(old.sample), current_timestamp at time zone 'utc-8' from sensor_data old", 
                     [](const drogon::orm::Result &result) {
                         std::cout << "data moveda: " << result.size() <<  " executed !!!" << std::endl;
                     },
@@ -89,7 +89,7 @@ void _execSensorInsertHandler(float temperature, float humidity, float pressure,
             cache_data_g.hour_step_before = stoi(row["point"].as<std::string>().substr(11, 2));
     }
 
-    psqlClient->execSqlAsync("insert into sensor_data(temperature, humidity, pressure, sample, point) values($1, $2, $3, $4, current_timestamp)",
+    psqlClient->execSqlAsync("insert into sensor_data(temperature, humidity, pressure, sample, point) values($1, $2, $3, $4, current_timestamp at time zone 'utf-8')",
             [](const drogon::orm::Result &result) {
                 std::cout << "insert sensor data: " << result.size() <<  " executed !!!" << std::endl;
             },
