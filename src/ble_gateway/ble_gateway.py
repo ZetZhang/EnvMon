@@ -82,7 +82,6 @@ class wsConnect():
             yield gen.sleep(1)
 
     def on_message(self, msg):
-        print('msg: {}'.format(msg))
         message = json.loads(msg)
         identity = message["identity"]
         if identity == 0:
