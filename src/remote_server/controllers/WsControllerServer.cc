@@ -52,8 +52,14 @@ void _execCacheDataListHandler() {
 void _execSensorInsertHandler(float temperature, float humidity, float pressure, int sample) {
     orm::DbClientPtr psqlClient = app().getDbClient();
 
-    std::time_t tc = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
-    int n_hour = std::put_time(std::localtime(&tc), "H")._M_tmb->tm_hour;
+    // FIXME: logic should complected in SQL
+    std::time_t tc = std::time(nullptr);
+    char mbstr[11];
+    int n_hour = -1;
+    if (std::strftime(mbstr, sizeof(mbstr), "%Y%m%d%H", std::localtime(&tc))) {
+        n_hour = atoi(mbstr);
+        if (n_hour == -1) return;
+    }
 
     std::cout << "currentTime: " << n_hour << ", latestTime: " << cache_data_g.hour_step_before << std::endl;
 
@@ -83,10 +89,11 @@ void _execSensorInsertHandler(float temperature, float humidity, float pressure,
         // pass
     } else {
         _execCacheDataListHandler();
-        auto result = psqlClient->execSqlSync("select point from sensor_data order by point desc limit 1");
+        auto result = psqlClient->execSqlSync("select to_char(point, 'yyyymmddhh24') as latest_time from sensor_data order by point desc limit 1");
 
-        for (auto row : result)
-            cache_data_g.hour_step_before = stoi(row["point"].as<std::string>().substr(11, 2));
+        for (auto row : result) {
+            cache_data_g.hour_step_before = stoi(row["latest_time"].as<std::string>());
+        }
     }
 
     psqlClient->execSqlAsync("insert into sensor_data(temperature, humidity, pressure, sample, point) values($1, $2, $3, $4, current_timestamp at time zone 'utf-8')",
