@@ -1,0 +1,14 @@
+@startuml
+|ble_sensor_service|
+:执行灯光线程;
+:执行传感器采集线程;
+:执行蓝牙传输功能线程;
+:service_start_work();
+fork
+|lighting|
+fork again
+|sensor_acquisition|
+fork again
+|bluetooth|
+end fork
+@enduml

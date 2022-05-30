@@ -30,7 +30,7 @@ class Client(object):
     def run(self):
         while True:
             #  data = {'identity': 3, 'control': 1}
-            #  data = {'identity': 5}
+            data = {'identity': 5}
 
 #  b''.join(map(lambda x:int.to_bytes(x,1,'little'),s))
             #  value = [70, 20, 109, 11, 110, 10, 67, 42, 70, 40, 28, 22, 30, 20]
